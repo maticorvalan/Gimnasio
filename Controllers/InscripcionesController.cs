@@ -7,22 +7,63 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Gimnasio.Data;
 using Gimnasio.Models;
+using Gimnasio.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Gimnasio.Controllers
 {
+    [Authorize(Roles = "Administrador")]
     public class InscripcionesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IInscripcionService inscripcionService;
+        private readonly IUsuarioService usuarioService;
+        private readonly IClaseService claseService;
 
-        public InscripcionesController(ApplicationDbContext context)
+        public InscripcionesController(IInscripcionService inscripcionService, IUsuarioService usuarioService, IClaseService claseService)
         {
-            _context = context;
+            this.inscripcionService = inscripcionService;
+            this.usuarioService = usuarioService;
+            this.claseService = claseService;
+        }
+
+        private async Task CargarViewBag()
+        {
+            var usuarios = await usuarioService.ObtenerTodos();
+            var clases = await claseService.ObtenerTodos();
+
+            ViewBag.Usuarios = new SelectList(usuarios, "id", "nombre");
+            ViewBag.Clases = new SelectList(clases, "id", "nombre");
         }
 
         // GET: Inscripciones
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? pagina = 1, DateTime? fechaInicio = null, DateTime? fechaFin = null)
         {
-            return View(await _context.Inscripciones.ToListAsync());
+            int pageNumber = pagina ?? 1;
+            int pageSize = 5;
+
+            var (inscripciones, total) = await inscripcionService.ObtenerPaginado(
+                pageNumber, pageSize, fechaInicio, fechaFin);
+
+            int totalPaginas = (int)Math.Ceiling((double)total / pageSize);
+
+            ViewBag.Pagina = pageNumber;
+            ViewBag.TotalPaginas = totalPaginas;
+            ViewBag.FechaInicio = fechaInicio?.ToString("yyyy-MM-dd");
+            ViewBag.FechaFin = fechaFin?.ToString("yyyy-MM-dd");
+
+            return View(inscripciones);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Ingresos(DateTime? fecha)
+        {
+            var fechaSeleccionada = fecha ?? DateTime.Today;
+            var ingresos = await inscripcionService.ObtenerIngresosPorFecha(fechaSeleccionada, fechaSeleccionada);
+
+            ViewBag.FechaSeleccionada = fechaSeleccionada;
+            ViewBag.TotalIngresos = ingresos.Count;
+
+            return View(ingresos);
         }
 
         // GET: Inscripciones/Details/5
@@ -33,8 +74,7 @@ namespace Gimnasio.Controllers
                 return NotFound();
             }
 
-            var inscripcion = await _context.Inscripciones
-                .FirstOrDefaultAsync(m => m.id == id);
+            var inscripcion = await inscripcionService.ObtenerPorId(id.Value);
             if (inscripcion == null)
             {
                 return NotFound();
@@ -44,8 +84,9 @@ namespace Gimnasio.Controllers
         }
 
         // GET: Inscripciones/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            await CargarViewBag();
             return View();
         }
 
@@ -58,8 +99,11 @@ namespace Gimnasio.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(inscripcion);
-                await _context.SaveChangesAsync();
+                var creado = await inscripcionService.Crear(inscripcion);
+                if (!creado.Exito){
+                    ModelState.AddModelError(string.Empty, creado.Mensaje);
+                    return View(inscripcion);
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(inscripcion);
@@ -73,7 +117,7 @@ namespace Gimnasio.Controllers
                 return NotFound();
             }
 
-            var inscripcion = await _context.Inscripciones.FindAsync(id);
+            var inscripcion = await inscripcionService.ObtenerPorId(id.Value);
             if (inscripcion == null)
             {
                 return NotFound();
@@ -97,12 +141,16 @@ namespace Gimnasio.Controllers
             {
                 try
                 {
-                    _context.Update(inscripcion);
-                    await _context.SaveChangesAsync();
+                    var actualizado = await inscripcionService.Actualizar(inscripcion);
+                    if (!actualizado.Exito)
+                    {
+                        ModelState.AddModelError(string.Empty, actualizado.Mensaje);
+                        return View(inscripcion);
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!InscripcionExists(inscripcion.id))
+                    if (!await InscripcionExists(inscripcion.id))
                     {
                         return NotFound();
                     }
@@ -124,8 +172,7 @@ namespace Gimnasio.Controllers
                 return NotFound();
             }
 
-            var inscripcion = await _context.Inscripciones
-                .FirstOrDefaultAsync(m => m.id == id);
+            var inscripcion = await inscripcionService.ObtenerPorId(id.Value);
             if (inscripcion == null)
             {
                 return NotFound();
@@ -139,19 +186,44 @@ namespace Gimnasio.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var inscripcion = await _context.Inscripciones.FindAsync(id);
-            if (inscripcion != null)
+            var inscripcion = await inscripcionService.ObtenerPorId(id);
+            if (inscripcion == null)
             {
-                _context.Inscripciones.Remove(inscripcion);
+                return NotFound();
             }
 
-            await _context.SaveChangesAsync();
+            var eliminado = await inscripcionService.Eliminar(id);
+            if (!eliminado.Exito)
+            {
+                TempData["Error"] = eliminado.Mensaje;
+            }
+            
+
             return RedirectToAction(nameof(Index));
         }
 
-        private bool InscripcionExists(int id)
+        private async Task<bool> InscripcionExists(int id)
         {
-            return _context.Inscripciones.Any(e => e.id == id);
+            return await inscripcionService.ObtenerPorId(id) != null;
+        }
+
+        public async Task<IActionResult> CheckIn(int id)
+        {
+            var inscripcion = await inscripcionService.ObtenerPorId(id);
+            if (inscripcion == null)
+            {
+                return NotFound();
+            }
+
+            var checkIn = await inscripcionService.MarcarAsistencia(id, true);
+            if (!checkIn.Exito)
+            {
+                TempData["Error"] = checkIn.Mensaje;
+            } else
+            {
+                TempData["Exito"] = "Asistencia marcada correctamente.";
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

@@ -1,63 +1,67 @@
 @model Gimnasio.Models.Usuario
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Eliminar Usuario";
 }
 
-<h1>Delete</h1>
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+    <h1 style="color:#e5e2e1; margin:0;">Eliminar Usuario</h1>
+    <a asp-action="Index" class="btn-action btn-action-view">← Volver</a>
+</header>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Usuario</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.nombre)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.nombre)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.dni)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.dni)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.rol)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.rol)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.password)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.password)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.estado)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.estado)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.fecha_alta)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.fecha_alta)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ruta_avatar)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ruta_avatar)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
+<div style="display:flex; justify-content:center;">
+<div class="card" style="width:100%; max-width:520px;">
+
+    @if (!string.IsNullOrEmpty(Model?.ruta_avatar))
+    {
+        <div style="display:flex; justify-content:center; margin-bottom:var(--spacing-lg);">
+            <img src="@Model.ruta_avatar" 
+                 style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-fixed-dim);" />
+        </div>
+    }
+    else
+    {
+        <div style="display:flex; justify-content:center; margin-bottom:var(--spacing-lg);">
+            <img src="/uploads/defecto.webp" 
+                 style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-fixed-dim);" />
+        </div>
+    }
+
+    <div class="alert alert-danger" style="text-align:center;">
+        <strong>¿Estás seguro?</strong> Esta acción no se puede deshacer.
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--spacing-md);">
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Nombre</div>
+            <div style="color:#e5e2e1; font-size:16px;">@Model?.nombre</div>
+        </div>
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">DNI</div>
+            <div style="color:#e5e2e1; font-size:16px;">@Model?.dni</div>
+        </div>
+
+        <div>
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Estado</div>
+            @if (Model?.estado == true)
+            {
+                <span style="background:rgba(171,214,0,0.15); color:#abd600; padding:3px 12px; border-radius:999px; font-size:12px; font-weight:700;">✓ Activo</span>
+            }
+            else
+            {
+                <span style="background:rgba(255,180,171,0.15); color:#ffb4ab; padding:3px 12px; border-radius:999px; font-size:12px; font-weight:700;">✕ Inactivo</span>
+            }
+        </div>
+
+    </div>
+
+    <form asp-action="Delete" style="display:flex; gap:12px; margin-top:var(--spacing-lg); justify-content:center;">
         <input type="hidden" asp-for="id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Sí, eliminar" class="btn btn-danger" />
+        <a asp-action="Index" class="btn btn-ghost">Cancelar</a>
     </form>
+
+</div>
 </div>

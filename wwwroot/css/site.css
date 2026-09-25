@@ -29,3 +29,442 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.text-volver{
+  text-decoration: none;
+  color:rgb(0, 0, 0);
+  padding: 10px 13px;
+  background-color: rgb(183, 181, 181);
+  border-radius: 8px;
+  margin-left: 20px;  
+}
+.text-volver:hover{
+  transform: translateY(-10px);
+  background-color:rgb(165, 162, 162);
+  font-size: bold;
+}
+
+.imagen-con-hover {
+    position: relative;
+    display: inline-block;
+}
+
+.btn-eliminar-imagen {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: none;    
+}
+
+.imagen-con-hover:hover .btn-eliminar-imagen {
+    display: inline-block;
+}
+
+
+/* Quita bordes grises y mejora espaciado */
+.custom-pagination .page-item .page-link {
+    border: none;                 /* quita el borde gris */
+    margin: 0 4px;                 /* espacio entre números */
+    border-radius: 6px;            /* esquinas redondeadas */
+    color: #0d6efd;                /* azul Bootstrap */
+    font-weight: 500;
+    background-color: transparent; /* fondo limpio */
+    transition: all 0.2s ease;
+}
+
+.custom-pagination .page-item .page-link:hover {
+    background-color: #e9f2ff;     /* fondo sutil al pasar */
+    color: #0a58ca;
+}
+
+/* Estado activo */
+.custom-pagination .page-item.active .page-link {
+    background-color: #0d6efd;     /* azul Bootstrap */
+    color: #fff;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Estado deshabilitado */
+.custom-pagination .page-item.disabled .page-link {
+    color: #6c757d;                /* gris suave */
+    background-color: transparent;
+}
+
+/* Ajuste de íconos (centrado y tamaño) */
+.custom-pagination .page-link i {
+    font-size: 0.9rem;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.85rem;
+    padding: 0.4em 0.7em;
+}
+
+.card {
+    border-radius: .5rem;
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+.roboto-black {
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 900;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
+.roboto-regular {
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
+/* En tu site.css */
+.select2-container--default .select2-selection--single {
+    background-color: var(--surface-container-low) !important;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+}
+
+/* Texto del valor seleccionado */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #e5e2e1 !important;
+    font-size: 14px;
+    line-height: 44px;
+    padding-left: 0;
+}
+
+/* Placeholder */
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: var(--on-surface-variant) !important;
+}
+
+/* Flecha */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 44px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: var(--on-surface-variant) transparent transparent transparent;
+}
+
+/* Dropdown contenedor */
+.select2-dropdown {
+    background-color: var(--surface-container-high) !important;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Input de búsqueda dentro del dropdown */
+.select2-search--dropdown .select2-search__field {
+    background-color: var(--surface-container) !important;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e5e2e1 !important;
+    border-radius: 4px;
+    outline: none;
+}
+
+/* Opciones de la lista */
+.select2-container--default .select2-results__option {
+    background-color: var(--surface-container-high) !important;
+    color: #e5e2e1 !important;
+    font-size: 14px;
+    padding: 10px 14px;
+}
+
+/* Opción hover/highlighted */
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: rgba(171,214,0,0.1) !important;
+    color: #abd600 !important;
+}
+
+/* Opción ya seleccionada */
+.select2-container--default .select2-results__option--selected {
+    background-color: rgba(171,214,0,0.2) !important;
+    color: #abd600 !important;
+}
+
+/* Mensaje "Buscando..." o "Sin resultados" */
+.select2-container--default .select2-results__option.select2-results__option--disabled {
+    color: var(--on-surface-variant) !important;
+}
+
+/* Focus del contenedor */
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--single {
+    border-color: #abd600 !important;
+    box-shadow: 0 0 8px rgba(195,244,0,0.2);
+}
+
+.field-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--primary-fixed-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.nav-link.active-link {
+    color: var(--primary-fixed-dim) !important;
+    text-shadow: 0 0 8px rgba(195, 244, 0, 0.6);
+    position: relative;
+}
+
+.nav-link.active-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    background: var(--primary-fixed-dim);
+    box-shadow: 0 0 10px rgba(195, 244, 0, 0.8);
+    border-radius: 2px;
+}
+
+.nav-link:hover {
+    color: var(--primary-fixed-dim) !important;
+    text-shadow: 0 0 6px rgba(195, 244, 0, 0.4);
+    transition: all 0.3s ease;
+}
+
+
+/* Cards de accesos rápidos con hover animado */
+.card-accion {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: var(--on-background);
+}
+
+.card-accion:hover {
+  background-color: rgba(195, 244, 0, 0.08);
+  transform: scale(1.02);
+}
+
+.card-accion.card-accion-secondary:hover {
+  background-color: rgba(255, 94, 7, 0.08);
+}
+
+/* Flecha que aparece en hover */
+.card-accion .flecha {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-accion:hover .flecha {
+  opacity: 1;
+}
+
+/* Filas de tabla con hover de borde + fondo (ya lo tenías en .data-table, 
+   pero agregamos la versión con borde más marcado) */
+.data-table tbody tr {
+  border-left: 4px solid transparent;
+}
+
+.data-table tbody tr:hover {
+  border-left: 4px solid var(--primary-fixed-dim);
+  background: rgba(195, 244, 0, 0.08);
+}
+
+/* Login */
+body.login-page {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at top left, rgba(195, 244, 0, 0.18), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255, 94, 7, 0.14), transparent 32%),
+    linear-gradient(135deg, #0f1115 0%, #171b23 45%, #0b0d12 100%);
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.login-card {
+  position: relative;
+  width: min(100%, 460px);
+  padding: 36px 32px 32px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #0f172a;
+  border-radius: 28px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(195, 244, 0, 0.06) 0%, transparent 48%, rgba(255, 94, 7, 0.06) 100%);
+  pointer-events: none;
+}
+
+.login-card::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-fixed-dim) 0%, #ff5e07 100%);
+}
+
+.login-badge {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(195, 244, 0, 0.14);
+  color: #3f4b00;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.login-badge::before {
+  content: '●';
+  color: var(--primary-fixed-dim);
+}
+
+.logo-wrap {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #111111 0%, #232323 100%);
+  border-radius: 22px;
+  padding: 14px 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.logo-wrap .login-logo {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 135px;
+  object-fit: contain;
+}
+
+.login-title {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin-bottom: 22px;
+  color: #111827;
+}
+
+.login-title h2 {
+  margin: 0 0 6px;
+  font-size: 1.55rem;
+  color: #111827;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.login-title p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.login-form {
+  position: relative;
+  z-index: 1;
+}
+
+.login-form .form-group {
+  margin-bottom: 15px;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 0.89rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.login-form .login-input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 14px;
+  background: rgba(248, 250, 252, 0.95);
+  box-sizing: border-box;
+  color: #111827;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.login-form .login-input:focus {
+  outline: none;
+  border-color: var(--primary-fixed-dim);
+  box-shadow: 0 0 0 4px rgba(171, 214, 0, 0.16);
+  transform: translateY(-1px);
+}
+
+.login-submit {
+  width: 100%;
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 16px;
+  background: linear-gradient(90deg, #111827 0%, #1f2937 70%, #0f172a 100%);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+  margin-top: 24px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+.login-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.24);
+}
+
+.login-validation-summary {
+  color: var(--error, #dc2626);
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.login-field-validation-error {
+  display: block;
+  margin-top: 4px;
+  color: var(--error, #dc2626);
+  font-size: 0.82rem;
+}
+
+.login-footer {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+

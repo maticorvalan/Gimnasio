@@ -1,0 +1,99 @@
+@model Gimnasio.Models.Usuario
+
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+    <h1 style="color:#e5e2e1; margin:0;">Mi Perfil</h1>
+    <span >@User.Identity?.Name</span>
+</header>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div style="display:flex; justify-content:center;">
+<div class="card" style="width:100%; max-width:520px;">
+    <form asp-action="Perfil" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" style="color:var(--error); margin-bottom:var(--spacing-md); font-size:14px;"></div>
+        <input type="hidden" asp-for="id" />
+
+        <!-- Foto de perfil -->
+        <div class="form-group" style="text-align:center;">
+            <div style="margin-bottom:12px;">
+                @if (!string.IsNullOrEmpty(Model?.ruta_avatar))
+                {
+                    <img id="preview-avatar" src="@Model.ruta_avatar"
+                         style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-fixed-dim);" />
+                }
+                else
+                {
+                    <img id="preview-avatar" src="/uploads/defecto.webp"
+                         style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-fixed-dim);" />
+                }
+            </div>
+            <label style="display:block; margin-bottom:4px;">Cambiar foto de perfil</label>
+            <input type="file" name="avatar" accept="image/*" id="input-avatar" />
+            <input type="hidden" asp-for="ruta_avatar" />
+        </div>
+
+        <!-- Nombre - editable -->
+        <div class="form-group">
+            <label>Nombre <span style="color:var(--on-surface-variant); font-weight:400;">(no editable)</span></label>
+            <input value="@Model?.nombre" readonly style="opacity:0.7; cursor:not-allowed;" />
+            <input type="hidden" asp-for="nombre" />
+        </div>
+
+        <!-- DNI - solo lectura -->
+        <div class="form-group">
+            <label>DNI <span style="color:var(--on-surface-variant); font-weight:400;">(no editable)</span></label>
+            <input value="@Model?.dni" readonly style="opacity:0.7; cursor:not-allowed;" />
+            <input type="hidden" asp-for="dni" />
+        </div>
+
+        <!-- Fecha de alta - solo lectura -->
+        <div class="form-group">
+            <label>Fecha de Alta <span style="color:var(--on-surface-variant); font-weight:400;">(no editable)</span></label>
+            <input value="@Model?.fecha_alta.ToString("dd/MM/yyyy")" readonly style="opacity:0.7; cursor:not-allowed;" />
+            <input type="hidden" asp-for="fecha_alta" />
+        </div>
+
+        <!-- Rol y estado - ocultos, no editables por el usuario -->
+        <input type="hidden" asp-for="rol" />
+        <input type="hidden" asp-for="estado" />
+        <input type="hidden" asp-for="password" />
+
+        <!-- Nueva contraseña -->
+        <div class="form-group">
+            <label>Nueva Contraseña</label>
+            <input type="password" name="nuevaPassword" placeholder="Dejar vacío para no cambiar" />
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:var(--spacing-md);">
+            <input type="submit" value="Guardar cambios" class="btn btn-primary" />
+            @if(User.IsInRole("Administrador"))
+            {
+                <a asp-action="Index" class="btn btn-ghost">Cancelar</a>
+            }
+            else
+            {
+                <a asp-action="Inicio" class="btn btn-ghost">Cancelar</a>
+            }
+        </div>
+    </form>
+</div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('input-avatar').addEventListener('change', function () {
+            const archivo = this.files[0];
+            if (!archivo) return;
+            const url = URL.createObjectURL(archivo);
+            document.getElementById('preview-avatar').src = url;
+        });
+    </script>
+}

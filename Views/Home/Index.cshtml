@@ -1,8 +1,582 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<style>
+    .dashboard-main {
+        width: 100%;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 32px;
+        margin-top: -5px;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .quick-action-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.1), 0 0 20px rgba(195, 244, 0, 0.15);
+        border-radius: 12px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--on-background);
+        text-align: left;
+        border: none;
+        text-decoration: none;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .quick-action-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        flex-shrink: 0;
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .metric-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .table-section {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .table-section-header {
+        padding: 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .responsive-table {
+        width: 100%;
+        text-align: left;
+        margin: 0;
+        border-collapse: collapse;
+        min-width: 700px; /* fuerza scroll horizontal en mobile en vez de aplastarse */
+    }
+
+    .responsive-table th,
+    .responsive-table td {
+        padding: 16px 20px;
+    }
+
+    .table-scroll-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .accion-botones {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .modal-box {
+        background: #201f1f;
+        border-radius: 12px;
+        padding: 24px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        box-sizing: border-box;
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-main {
+            margin-top: 50px;
+            padding: 16px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 28px;
+        }
+
+        .dashboard-header p {
+            font-size: 16px !important;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-action-card {
+            padding: 18px;
+        }
+
+        .quick-action-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 24px;
+        }
+
+        .quick-action-card h3 {
+            font-size: 16px !important;
+        }
+
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .metric-card span {
+            font-size: 24px !important;
+        }
+
+        .table-section-header h3 {
+            font-size: 16px !important;
+        }
+
+        .responsive-table {
+            min-width: 600px;
+        }
+
+        .responsive-table th,
+        .responsive-table td {
+            padding: 12px 14px;
+            font-size: 13px;
+        }
+
+        .accion-botones {
+            flex-direction: column;
+        }
+
+        .accion-botones button {
+            width: 100%;
+            margin-left: 0 !important;
+        }
+
+        .modal-box {
+            width: 95%;
+            padding: 20px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .quick-action-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .quick-action-card > span {
+            display: none; /* la flecha decorativa no aporta en mobile */
+        }
+    }
+</style>
+
+<main class="dashboard-main">
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div>
+            <h1 style="margin: 0 0 8px 0;">Dashboard</h1>
+            <p style="font-size: 20px; margin: 0; color: #CCFF00;">Bienvenido de nuevo, administrador.</p>
+        </div>
+    </header>
+
+    <section class="quick-actions">
+        <a href="/Usuarios/CreateAlumn" class="quick-action-card" onmouseover="this.style.backgroundColor='rgba(195, 244, 0, 0.08)'" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.05)'">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div class="quick-action-icon" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                    👤
+                </div>
+                <div style="text-align: left;">
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--primary-fixed-dim); margin: 0 0 4px 0;">Nuevo usuario</h3>
+                    <p style="font-size: 12px; color: var(--on-surface-variant); margin: 0;">Crear membresía y perfil de usuario</p>
+                </div>
+            </div>
+            <span style="font-size: 24px; color: var(--primary-fixed-dim); opacity: 0; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">→</span>
+        </a>
+
+        <button type="button" onclick="abrirCheckIn()" class="quick-action-card" onmouseover="this.style.backgroundColor='rgba(255, 94, 7, 0.08)'" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.05)'">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div class="quick-action-icon" style="background-color: var(--secondary-container); color: var(--on-secondary-container);">
+                    🔓
+                </div>
+                <div style="text-align: left;">
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--secondary-fixed-dim); margin: 0 0 4px 0;">Registrar ingreso</h3>
+                    <p style="font-size: 12px; color: var(--on-surface-variant); margin: 0;">Check-in rápido de socios</p>
+                </div>
+            </div>
+            <span style="font-size: 24px; color: var(--secondary-fixed-dim); opacity: 0; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">→</span>
+        </button>
+    </section>
+
+    <!-- Metrics Grid -->
+    <section class="metrics-grid">
+        <div class="metric-card">
+            <div style="position: absolute; top: 0; right: 0; padding: 8px; opacity: 0.2; font-size: 32px;">👥</div>
+            <p style="font-size: 11px; font-weight: 700; color: var(--on-surface-variant); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em;">Miembros totales:</p>
+            <div style="display: flex; align-items: flex-end; gap: 8px; margin-bottom: 16px;">
+                <span style="font-size: 28px; font-weight: 700; color: var(--primary-fixed-dim);">@ViewBag.CantidadUsuarios</span>
+            </div>
+            <div style="height: 4px; width: 100%; background: var(--surface-container-highest); border-radius: 2px; overflow: hidden;">
+                <div style="height: 100%; background: var(--primary-fixed-dim); width: 75%; border-radius: 2px;"></div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div style="position: absolute; top: 0; right: 0; padding: 8px;">
+                <div style="width: 8px; height: 8px; background: var(--primary-fixed-dim); border-radius: 50%; box-shadow: 0 0 20px rgba(195, 244, 0, 0.5); animation: pulse 2s ease-in-out infinite;"></div>
+            </div>
+            <p style="font-size: 11px; font-weight: 700; color: var(--on-surface-variant); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em;">Ingresos hoy:</p>
+            <div style="display: flex; align-items: flex-end; gap: 8px; margin-bottom: 16px;">
+                <span style="font-size: 28px; font-weight: 700; color: var(--primary-fixed-dim);">@ViewBag.CantidadDia</span>
+            </div>
+            <div style="display: flex; gap: 4px;">
+                <div class="flex-grow-1" style="height: 4px; flex-grow: 1; background: var(--primary-fixed-dim); border-radius: 2px;"></div>
+                <div class="flex-grow-2" style="height: 4px; flex-grow: 1; background: var(--surface-container-highest); border-radius: 2px;"></div>
+                <div class="flex-grow-3" style="height: 4px; flex-grow: 1; background: var(--surface-container-highest); border-radius: 2px;"></div>
+                <div class="flex-grow-4" style="height: 4px; flex-grow: 1; background: var(--surface-container-highest); border-radius: 2px;"></div>
+                <div class="flex-grow-5" style="height: 4px; flex-grow: 1; background: var(--surface-container-highest); border-radius: 2px;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Table: Próximas Clases -->
+    <section class="table-section">
+        <div class="table-section-header">
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--primary-fixed-dim); margin: 0;">Próximas Clases</h3>
+            <a href="#" style="color: var(--primary-fixed-dim); font-weight: 700; font-size: 12px; text-decoration: underline;">Ver todas</a>
+        </div>
+        <div class="table-scroll-wrapper">
+            <table class="responsive-table">
+                <thead>
+                    <tr style="background: rgba(32, 31, 31, 0.5); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                        <th style="font-weight: 700; font-size: 11px; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.05em;">CLASE</th>
+                        <th style="font-weight: 700; font-size: 11px; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.05em;">PROFESOR</th>
+                        <th style="font-weight: 700; font-size: 11px; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.05em;">HORA</th>
+                        <th style="font-weight: 700; font-size: 11px; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.05em;">CAPACIDAD</th>
+                        <th style="font-weight: 700; font-size: 11px; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.05em;">ACCIÓN</th>
+                        <th style="font-weight: 700; font-size: 11px; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.05em;">INSCRIPTOS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var clase in @ViewBag.Clases)
+                    {
+                        var inscriptosHoy = @ViewBag.InscriptosPorClase.TryGetValue(clase.id, out int cantidad) ? cantidad : 0;
+                        var cerrada = ((HashSet<int>)ViewBag.ClasesCerradas).Contains(clase.id);
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); background: rgba(255, 255, 255, 0.02); transition: all 0.3s ease;" onmouseover="this.style.background='rgba(195, 244, 0, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.02)'">
+                            <td style="font-weight: 600; color: var(--on-background);">@clase.nombre</td>
+                            <td style="color: var(--on-surface-variant);">@clase.Profesor.nombre</td>
+                            <td style="color: var(--on-surface-variant);">@clase.hora_inicio.ToString(@"hh\:mm")</td>
+                            <td style="color: var(--on-surface-variant);">
+                                @if (cerrada)
+                                {
+                                    <span style="display: inline-block; padding: 4px 8px; background: rgba(255,180,171,0.2); color: #ffb4ab; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;">Sin Cupos</span>
+                                }
+                                else
+                                {
+                                    <span style="display: inline-block; padding: 4px 8px; background: var(--primary-fixed-dim); color: var(--on-primary); border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;">@cantidad/@clase.capacidad</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="accion-botones">
+                                    <button type="button" class="btn-action btn-action-delete" onclick="confirmarCancelarClase(@clase.id, '@clase.nombre')">Cancelar</button>
+                                    <button type="button" class="btn-action btn-action-edit" onclick="confirmarCerrarCupos(@clase.id, '@clase.nombre')">Cerrar cupos</button>
+                                </div>
+                            </td>
+                            <td>
+                                <button type="button" class="btn-action btn-action-view" onclick="verInscriptos(@clase.id, '@clase.nombre', @inscriptosHoy)">
+                                    Ver (@inscriptosHoy)
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                    @if (!((List<Gimnasio.Models.Clase>)ViewBag.Clases).Any())
+                    {
+                        <tr>
+                            <td colspan="6" style="text-align:center; color:var(--on-surface-variant);">No hay clases programadas próximamente.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Tabla ingresos de hoy -->
+    <section class="table-section">
+        <div class="table-section-header">
+            <h3 style="margin: 0; color: var(--primary-fixed-dim);">Ingresos de Hoy</h3>
+            <a href="/Inscripciones/Ingresos" style="font-size:12px;">Mas detalles</a>
+        </div>
+        <div class="table-scroll-wrapper">
+            <table class="data-table responsive-table" style="min-width: 400px;">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Clase</th>
+                        <th>Hora de Ingreso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ingreso in (List<Gimnasio.Models.Inscripcion>)ViewBag.Ingresos)
+                    {
+                        <tr>
+                            <td style="font-weight:600;">@ingreso.Usuario?.nombre</td>
+                            <td class="text-white">@ingreso.Clase?.nombre - @ingreso.Clase?.hora_inicio.ToString(@"hh\:mm")</td>
+                            <td class="text-white">@ingreso.fecha_checkin?.ToString("HH:mm")</td>
+                        </tr>
+                    }
+                    @if (!((List<Gimnasio.Models.Inscripcion>)ViewBag.Ingresos).Any())
+                    {
+                        <tr>
+                            <td colspan="3" style="text-align:center; color:var(--on-surface-variant);">Aún no hay ingresos registrados hoy.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Modal Check-in -->
+    <div id="checkInModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-box">
+            <h2 style="color: #abd600; margin-top: 0;">Check-in</h2>
+            <select id="claseSelect" style="width: 100%; padding: 12px; margin-bottom: 16px; background: #131313; color: #e5e2e1; border: 1px solid #abd600; border-radius: 8px; box-sizing: border-box;">
+                <option value="">-- Selecciona el tipo de clase --</option>
+                @foreach (var clase in ViewBag.Clases)
+                {
+                    <option value="@clase.id">@clase.nombre - Hora: @clase.hora_inicio.ToString(@"hh\:mm")</option>
+                }
+            </select>
+            <input type="text" id="dniInput" placeholder="Ingresa tu DNI" style="width: 100%; padding: 12px; margin-bottom: 16px; background: #131313; color: #e5e2e1; border: 1px solid #abd600; border-radius: 8px; box-sizing: border-box;">
+            <div style="display: flex; gap: 12px;">
+                <button type="button" onclick="confirmarCheckIn()" style="flex: 1; padding: 12px; background: #abd600; color: #131313; border: none; border-radius: 8px; cursor: pointer; font-weight: 700;">Confirmar</button>
+                <button type="button" onclick="cerrarModal()" style="flex: 1; padding: 12px; background: #555; color: #e5e2e1; border: none; border-radius: 8px; cursor: pointer;">Cerrar</button>
+            </div>
+            <div id="respuesta" style="margin-top: 16px; padding: 12px; border-radius: 8px; display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Modal Inscriptos -->
+    <div id="modalInscriptos" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-box" style="max-width: 480px; max-height: 80vh; overflow-y: auto;">
+            <h2 id="tituloInscriptos" style="color: #abd600; margin-top: 0;">Inscriptos</h2>
+            <div id="listaInscriptos" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            <button type="button" onclick="cerrarModalInscriptos()" style="width: 100%; margin-top: 16px; padding: 12px; background: #555; color: #e5e2e1; border: none; border-radius: 8px; cursor: pointer;">
+                Cerrar
+            </button>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    // CHECK IN
+    function abrirCheckIn() {
+        document.getElementById('checkInModal').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+        document.getElementById('checkInModal').style.display = 'none';
+        document.getElementById('dniInput').value = '';
+        document.getElementById('claseSelect').value = '';
+        document.getElementById('respuesta').style.display = 'none';
+        document.getElementById('respuesta').innerHTML = '';
+        location.reload();
+    }
+
+    async function confirmarCheckIn() {
+        const idClase = document.getElementById('claseSelect').value;
+        const dni = document.getElementById('dniInput').value;
+
+        if (!idClase || !dni) {
+            mostrarRespuesta('Completa todos los campos', false);
+            return;
+        }
+
+        try {
+            const response = await fetch('/Clases/MarcarAsistencia', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idClase: parseInt(idClase), dni: dni })
+            });
+            const resultado = await response.json();
+            mostrarRespuesta(resultado.mensaje, resultado.exito);
+
+        } catch (error) {
+            console.error('Error capturado:', error);
+            mostrarRespuesta('Error: ' + error.message, false);
+        }
+    }
+
+    function mostrarRespuesta(mensaje, exito) {
+        const div = document.getElementById('respuesta');
+        div.innerHTML = mensaje.replace(/\n/g, '<br>');
+        div.style.background = exito ? 'rgba(171, 214, 0, 0.2)' : 'rgba(255, 180, 171, 0.2)';
+        div.style.color = exito ? '#abd600' : '#ffb4ab';
+        div.style.display = 'block';
+    }
+
+    // BARRA DE INGRESOS
+    document.addEventListener('DOMContentLoaded', cargarBarraIngresos);
+    function cargarBarraIngresos() {
+        const barras = [
+            document.querySelector('.flex-grow-1'),
+            document.querySelector('.flex-grow-2'),
+            document.querySelector('.flex-grow-3'),
+            document.querySelector('.flex-grow-4'),
+            document.querySelector('.flex-grow-5')
+        ];
+
+        const cantidadDia = @ViewBag.CantidadDia;
+        const cantidadTotal = @ViewBag.CantidadUsuarios;
+        const porcentaje = Math.min((cantidadDia / cantidadTotal) * 100, 100);
+        const barrasActivas = Math.ceil((porcentaje / 100) * barras.length);
+
+        barras.forEach((barra, index) => {
+            barra.style.background = index < barrasActivas
+                ? 'var(--primary-fixed-dim)'
+                : 'var(--surface-container-highest)';
+        });
+    }
+
+    async function confirmarCancelarClase(idClase, nombreClase) {
+        try {
+            const res = await fetch(`/Home/InscriptosDelDia?idClase=${idClase}`);
+            const data = await res.json();
+
+            let mensaje = `¿Cancelar la clase "${nombreClase}" de hoy?`;
+            if (data.cantidad > 0) {
+                mensaje += `\n\n⚠️ Hay ${data.cantidad} usuario(s) inscripto(s). Se eliminarán sus inscripciones. Deberás avisarles manualmente.`;
+            }
+
+            if (!confirm(mensaje)) return;
+
+            const resPost = await fetch('/Home/CancelarClaseHoy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idClase })
+            });
+
+            const resultado = await resPost.json();
+            alert(resultado.mensaje);
+
+            if (resultado.exito) {
+                location.reload();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error al procesar la solicitud.');
+        }
+    }
+
+    async function confirmarCerrarCupos(idClase, nombreClase) {
+        if (!confirm(`¿Cerrar los cupos de "${nombreClase}" para hoy? Nadie más podrá inscribirse, pero los ya inscriptos mantienen su lugar.`)) return;
+
+        try {
+            const res = await fetch('/Home/CerrarCuposHoy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idClase })
+            });
+
+            const resultado = await res.json();
+            alert(resultado.mensaje);
+
+            if (resultado.exito) {
+                location.reload();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error al procesar la solicitud.');
+        }
+    }
+
+    async function verInscriptos(idClase, nombreClase, cantidad) {
+        document.getElementById('tituloInscriptos').textContent = `Inscriptos - ${nombreClase}`;
+        const lista = document.getElementById('listaInscriptos');
+
+        if (cantidad === 0) {
+            lista.innerHTML = '<p style="color: var(--on-surface-variant); text-align:center;">No hay inscriptos hoy.</p>';
+            document.getElementById('modalInscriptos').style.display = 'flex';
+            return;
+        }
+
+        lista.innerHTML = '<p style="color: var(--on-surface-variant);">Cargando...</p>';
+        document.getElementById('modalInscriptos').style.display = 'flex';
+
+        try {
+            const res = await fetch(`/Home/InscriptosDeClase?idClase=${idClase}`);
+            const inscriptos = await res.json();
+
+            lista.innerHTML = inscriptos.map(i => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:rgba(255,255,255,0.05); border-radius:8px; border-left:3px solid ${i.asistio ? '#abd600' : '#666'};">
+                    <div>
+                        <div style="color:#e5e2e1; font-weight:600;">${i.nombre}</div>
+                        <div style="color:var(--on-surface-variant); font-size:12px;">DNI: ${i.dni}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        ${i.asistio 
+                            ? `<span style="color:#abd600; font-size:12px; font-weight:700;">✓ Presente (${i.horaCheckIn})</span>` 
+                            : `<span style="color:var(--on-surface-variant); font-size:12px;">Reservado</span>`}
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (err) {
+            console.error(err);
+            lista.innerHTML = '<p style="color: #ffb4ab;">Error al cargar los inscriptos.</p>';
+        }
+    }
+
+    function cerrarModalInscriptos() {
+        document.getElementById('modalInscriptos').style.display = 'none';
+    }
+</script>

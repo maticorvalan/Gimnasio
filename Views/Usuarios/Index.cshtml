@@ -1,71 +1,124 @@
 @model IEnumerable<Gimnasio.Models.Usuario>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Usuarios";
+    var paginaActual = (int)(ViewBag.PaginaActual ?? 1);
+    var pageSize = (int)(ViewBag.PageSize ?? 5);
+    var totalRegistros = (int)(ViewBag.TotalRegistros ?? 0);
+    var totalPaginas = (int)(ViewBag.TotalPaginas ?? 1);
+    var query = (string)(ViewBag.Query ?? string.Empty);
 }
 
-<h1>Index</h1>
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px; gap:16px; flex-wrap:wrap;">
+    <div>
+        <h1 style="color:#e5e2e1; margin:0;">Usuarios</h1>
+    </div>
+    <a asp-action="Create" class="btn-header">Nuevo Usuario</a>
+</header>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
+
+<form asp-action="Index" method="get" style="display:flex; gap:16px; margin-bottom:var(--spacing-md); flex-wrap:wrap; align-items:flex-end;">
+    <div>
+        <label style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--on-surface-variant); text-transform:uppercase; display:block; margin-bottom:4px;">Buscar por nombre o DNI</label>
+        <input type="text" name="q" value="@query" placeholder="Nombre o DNI..." style="max-width:320px;" />
+    </div>
+    <input type="hidden" name="pagina" value="1" />
+    <input type="hidden" name="pageSize" value="@pageSize" />
+    <button type="submit" class="btn btn-ghost" style="height:fit-content;">Buscar</button>
+    <a asp-action="Index" class="btn btn-ghost" style="height:fit-content;">Limpiar</a>
+</form>
+
+<div style="overflow-x: auto;">
+<table class="data-table">
     <thead>
-        <tr>
-            <th>
+        <tr style="background: rgba(171, 214, 0, 0.1); border-bottom: 2px solid #abd600;">
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
                 @Html.DisplayNameFor(model => model.nombre)
             </th>
-            <th>
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
                 @Html.DisplayNameFor(model => model.dni)
             </th>
-            <th>
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
                 @Html.DisplayNameFor(model => model.rol)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.password)
-            </th>
-            <th>
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
                 @Html.DisplayNameFor(model => model.estado)
             </th>
-            <th>
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
                 @Html.DisplayNameFor(model => model.fecha_alta)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ruta_avatar)
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+                Foto de perfil
             </th>
-            <th></th>
+            <th style="padding: 16px; text-align: center; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Acciones</th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
-        <tr>
-            <td>
+        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); transition: background 0.3s ease;" onmouseover="this.style.background='rgba(171, 214, 0, 0.05)'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
                 @Html.DisplayFor(modelItem => item.nombre)
             </td>
-            <td>
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
                 @Html.DisplayFor(modelItem => item.dni)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.rol)
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @Html.DisplayFor(modelItem => item.RolNombre)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.password)
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @if (item.estado)
+                {
+                    <span style="color: #abd600; font-weight: bold;">&#9679; Activo</span>  
+                }
+                else
+                {
+                    <span style="color: #ff4d4d; font-weight: bold;">&#9679; Inactivo</span>
+                }
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.estado)
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @item.fecha_alta.ToString("dd/MM/yyyy")
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.fecha_alta)
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @if (!string.IsNullOrEmpty(item.ruta_avatar))
+                {
+                    <img src="@item.ruta_avatar" style="width:40px; height:40px; border-radius:50%; margin-top:8px; object-fit:cover;" />
+                }
+                else
+                {
+                    <img src="/uploads/defecto.webp" style="width:40px; height:40px; border-radius:50%; margin-top:8px; object-fit:cover;" />
+                }
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ruta_avatar)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.id">Delete</a>
+            <td style="padding: 16px; text-align: center; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <a asp-action="Edit" asp-route-id="@item.id" class="btn-action btn-action-edit">Editar</a>
+                <a asp-action="Details" asp-route-id="@item.id" class="btn-action btn-action-view">Detalles</a>
+                <a asp-action="Delete" asp-route-id="@item.id" class="btn-action btn-action-delete">Eliminar</a>
             </td>
         </tr>
 }
     </tbody>
 </table>
+</div>
+
+<div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-top:24px; flex-wrap:wrap;">
+    <a asp-action="Index"
+       asp-route-pagina="@(paginaActual - 1)"
+       asp-route-pageSize="@pageSize"
+       asp-route-q="@query"
+       class="btn-header"
+       style="@(paginaActual <= 1 ? "pointer-events:none; opacity:0.5;" : "")">
+        Anterior
+    </a>
+
+    <span style="color:var(--on-surface-variant); font-size:14px;">
+        Página @paginaActual de @totalPaginas
+    </span>
+
+    <a asp-action="Index"
+       asp-route-pagina="@(paginaActual + 1)"
+       asp-route-pageSize="@pageSize"
+       asp-route-q="@query"
+       class="btn-header"
+       style="@(paginaActual >= totalPaginas ? "pointer-events:none; opacity:0.5;" : "")">
+        Siguiente
+    </a>
+</div>

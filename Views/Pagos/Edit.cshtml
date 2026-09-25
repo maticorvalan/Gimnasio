@@ -1,0 +1,60 @@
+@model Gimnasio.Models.Pago
+
+@{
+    ViewData["Title"] = "Editar Pago";
+}
+
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+    <h1 style="color:#e5e2e1; margin:0;">Editar Pago</h1>
+    <a asp-action="Index" class="btn-action btn-action-view">← Volver</a>
+</header>
+
+<div class="card" style="max-width:520px;">
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" style="color:var(--error); margin-bottom:var(--spacing-md); font-size:14px;"></div>
+        <input type="hidden" asp-for="id" />
+
+        <div class="form-group">
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Usuario</div>
+            <div style="color:#e5e2e1; font-size:16px;">@(Model.Usuario?.nombre ?? $"ID {Model.idusuario}")</div>
+        </div>
+
+        <div class="form-group">
+            <label>Suscripción</label>
+            <select asp-for="idsuscripcion" asp-items="ViewBag.Suscripciones">
+                <option value="">-- Sin suscripción asociada --</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Monto</label>
+            <input asp-for="monto" type="number" step="0.01" />
+            <span asp-validation-for="monto" style="color:var(--error); font-size:12px;"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Fecha de Pago</label>
+            <input asp-for="fecha_pago" type="date" />
+            <span asp-validation-for="fecha_pago" style="color:var(--error); font-size:12px;"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Método de Pago</label>
+            <select asp-for="metodo_pago">
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Tarjeta">Tarjeta</option>
+            </select>
+            <span asp-validation-for="metodo_pago" style="color:var(--error); font-size:12px;"></span>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:var(--spacing-md);">
+            <input type="submit" value="Actualizar" class="btn btn-primary" />
+            <a asp-action="Index" class="btn btn-ghost">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

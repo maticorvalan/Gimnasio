@@ -4,15 +4,21 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
-
-<h4>Profesor</h4>
+<header style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--spacing-xl); width: 100%; margin-top: 70px;">
+    <h1 style="color: #e5e2e1; margin: 0;">Editar Profesor</h1>
+    <h4>Profesor</h4>
+</header>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        @if (TempData["Error"] != null)
+        {
+            <div style="color:red;">@TempData["Error"]</div>
+        }
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="id" />
+            <input type="hidden" asp-for="rutaFoto" />
             <div class="form-group">
                 <label asp-for="nombre" class="control-label"></label>
                 <input asp-for="nombre" class="form-control" />
@@ -24,21 +30,43 @@
                 <span asp-validation-for="especialidad" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="rutaFoto" class="control-label"></label>
-                <input asp-for="rutaFoto" class="form-control" />
-                <span asp-validation-for="rutaFoto" class="text-danger"></span>
+                <label>Foto de perfil</label>
+                <input type="file" name="avatar" accept="image/*" id="input-avatar" />
+                
+                <div style="margin-top:8px;">
+                    @if (!string.IsNullOrEmpty(Model?.rutaFoto))
+{
+                        // Agregamos ?v= al final para "engañar" al caché
+                        <img id="preview-avatar" src="@Model.rutaFoto?v=@DateTime.Now.Ticks" 
+                            style="width:80px; height:80px; border-radius:50%; object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <img id="preview-avatar" src="/uploads/defecto.webp" 
+                            style="width:80px; height:80px; border-radius:50%; object-fit:cover;" />
+                    }
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+    
+</div>
+            <div class="form-group gap-2 d-flex">
+                <input type="submit" value="Guardar" class="btn btn-primary"/>
+                <a asp-action="Index" class="btn btn-secondary">Volver</a>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('input-avatar').addEventListener('change', function () {
+            const archivo = this.files[0];
+            if (!archivo) return;
+
+            // Crea una URL temporal para previsualizar sin subir al servidor
+            const url = URL.createObjectURL(archivo);
+            document.getElementById('preview-avatar').src = url;
+        });
+    </script>
 }

@@ -1,0 +1,185 @@
+@model IEnumerable<Gimnasio.Models.Pago>
+
+@{
+    ViewData["Title"] = "Pagos";
+    var paginaActual = (int)(ViewBag.PaginaActual ?? 1);
+    var pageSize = (int)(ViewBag.PageSize ?? 5);
+    var totalRegistros = (int)(ViewBag.TotalRegistros ?? 0);
+    var totalPaginas = (int)(ViewBag.TotalPaginas ?? 1);
+    var fechaFiltro = (string)(ViewBag.FechaFiltro ?? string.Empty);
+}
+
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+    <h1 style="color:#e5e2e1; margin:0;">Pagos</h1>
+    <a asp-action="Create" class="btn-header">+ Registrar Pago</a>
+</header>
+
+
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (TempData["Exito"] != null)
+{
+    <div class="alert alert-success">@TempData["Exito"]</div>
+}
+
+
+<!-- Filtros -->
+<div style="display:flex; gap:16px; margin-bottom:var(--spacing-md); flex-wrap:wrap; align-items:flex-end;">
+    <div>
+        <label style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--on-surface-variant); text-transform:uppercase; display:block; margin-bottom:4px;">Buscar</label>
+        <input 
+            type="text" 
+            id="filtro-texto" 
+            placeholder="Buscar por usuario o plan..." 
+            oninput="filtrar()"
+            style="max-width:300px;"
+        />
+    </div>
+    <div>
+        <label style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--on-surface-variant); text-transform:uppercase; display:block; margin-bottom:4px;">Método</label>
+        <select id="filtro-metodo" onchange="filtrar()" style="max-width:200px;">
+            <option value="">Todos los métodos</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Tarjeta">Tarjeta</option>
+        </select>
+    </div>
+    <div>
+        <label style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--on-surface-variant); text-transform:uppercase; display:block; margin-bottom:4px;">Desde</label>
+        <input type="date" id="filtro-desde" onchange="filtrar()" value="@fechaFiltro" style="max-width:180px;" />
+    </div>
+    <div>
+        <label style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--on-surface-variant); text-transform:uppercase; display:block; margin-bottom:4px;">Hasta</label>
+        <input type="date" id="filtro-hasta" onchange="filtrar()" style="max-width:180px;" />
+    </div>
+    <button onclick="limpiarFiltros()" class="btn btn-ghost" style="height:fit-content;">Limpiar</button>
+    <div class="metric-card" style="margin-left:auto;">
+        <div style="position: absolute; top: 0; right: 0; padding: 8px; opacity: 0.2; font-size: 32px;">💰</div>
+        <p style="font-size: 11px; font-weight: 700; color: var(--on-surface-variant); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em;">
+            Recaudación de @DateTime.Today.ToString("MMMM", new System.Globalization.CultureInfo("es-AR")):
+        </p>
+        <div style="display: flex; align-items: flex-end; gap: 8px; margin-bottom: 16px;">
+            <span style="font-size: 28px; font-weight: 700; color: var(--primary-fixed-dim);">
+                $@ViewBag.RecaudacionMes.ToString("N2")
+            </span>
+        </div>
+        <div style="color: var(--on-surface-variant); font-size: 12px;">
+            @ViewBag.CantidadPagosMes pago(s) registrados
+        </div>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div style="overflow-x:auto;">
+    <table class="data-table" id="tabla-pagos">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Plan</th>
+                <th>Monto</th>
+                <th>Fecha</th>
+                <th>Método</th>
+                <th style="text-align:center;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tbody-pagos">
+            @foreach (var pago in Model)
+            {
+                <tr class="fila-pago"
+                    data-usuario="@pago.Usuario?.nombre?.ToLower()"
+                    data-plan="@(pago.Suscripcion?.Plan?.nombre?.ToLower() ?? "")"
+                    data-metodo="@pago.metodo_pago"
+                    data-fecha="@pago.fecha_pago.ToString("yyyy-MM-dd")">
+
+                    <td>@(pago.Usuario?.nombre ?? $"ID {pago.idusuario}")</td>
+                    <td>
+                        <span style="background:rgba(171,214,0,0.15); color:var(--primary-fixed-dim); padding:3px 10px; border-radius:999px; font-size:12px; font-weight:700;">
+                            @(pago.Suscripcion?.Plan?.nombre)
+                        </span>
+                    </td>
+                    <td style="font-weight:700; color:var(--primary-fixed-dim);">
+                        $@pago.monto.ToString("N2")
+                    </td>
+                    <td>@pago.fecha_pago.ToString("dd/MM/yyyy")</td>
+                    <td>@pago.metodo_pago</td>
+                    <td>
+                        <div class="table-actions">
+                            <a asp-action="Details" asp-route-id="@pago.id" class="btn-action btn-action-view">Ver</a>
+                            <a asp-action="Edit" asp-route-id="@pago.id" class="btn-action btn-action-edit">Editar</a>
+                            <a asp-action="Delete" asp-route-id="@pago.id" class="btn-action btn-action-delete">Eliminar</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div id="sin-resultados" style="display:none; text-align:center; padding:60px 20px; color:var(--on-surface-variant);">
+        <div style="font-size:48px; margin-bottom:16px;">🔍</div>
+        <p style="margin:0;">No se encontraron pagos con esos filtros.</p>
+    </div>
+</div>
+
+<div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-top:24px; flex-wrap:wrap;">
+    <a asp-action="Index"
+       asp-route-pagina="@(paginaActual - 1)"
+       asp-route-pageSize="@pageSize"
+       asp-route-fecha="@(string.IsNullOrEmpty(fechaFiltro) ? null : fechaFiltro)"
+       class="btn-header"
+       style="@(paginaActual <= 1 ? "pointer-events:none; opacity:0.5;" : "")">
+        Anterior
+    </a>
+
+    <span style="color:var(--on-surface-variant); font-size:14px;">
+        Página @paginaActual de @totalPaginas
+    </span>
+
+    <a asp-action="Index"
+       asp-route-pagina="@(paginaActual + 1)"
+       asp-route-pageSize="@pageSize"
+       asp-route-fecha="@(string.IsNullOrEmpty(fechaFiltro) ? null : fechaFiltro)"
+       class="btn-header"
+       style="@(paginaActual >= totalPaginas ? "pointer-events:none; opacity:0.5;" : "")">
+        Siguiente
+    </a>
+</div>
+
+@section Scripts {
+<script>
+    function filtrar() {
+        const texto  = document.getElementById('filtro-texto').value.toLowerCase();
+        const metodo = document.getElementById('filtro-metodo').value;
+        const desde  = document.getElementById('filtro-desde').value;  // "yyyy-MM-dd" o ""
+        const hasta  = document.getElementById('filtro-hasta').value;
+
+        const filas = document.querySelectorAll('.fila-pago');
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const fechaFila = fila.dataset.fecha; // ya está en "yyyy-MM-dd", se compara directo como string
+
+            const coincideTexto  = !texto  || fila.dataset.usuario.includes(texto) || fila.dataset.plan.includes(texto);
+            const coincideMetodo = !metodo || fila.dataset.metodo === metodo;
+            const coincideDesde  = !desde  || fechaFila >= desde;
+            const coincideHasta  = !hasta  || fechaFila <= hasta;
+
+            const mostrar = coincideTexto && coincideMetodo && coincideDesde && coincideHasta;
+            fila.style.display = mostrar ? '' : 'none';
+            if (mostrar) visibles++;
+        });
+
+        document.getElementById('sin-resultados').style.display = visibles === 0 ? 'block' : 'none';
+    }
+
+    function limpiarFiltros() {
+        document.getElementById('filtro-texto').value = '';
+        document.getElementById('filtro-metodo').value = '';
+        document.getElementById('filtro-desde').value = '';
+        document.getElementById('filtro-hasta').value = '';
+        filtrar();
+    }
+</script>
+}

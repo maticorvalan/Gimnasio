@@ -7,41 +7,116 @@
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Gimnasio.styles.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        .navbar .nav-link {
+            font-size: 1.2rem;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        @if(User.Identity?.IsAuthenticated == true)
+        {
+            <nav class="navbar navbar-expand navbar-dark bg-dark fixed-top roboto-regular ">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Gimnasio</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="/uploads/Logo_chico.jpeg" alt="Logo" height="40" style="mix-blend-mode: screen;" />
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Clases" asp-action="Index">Clases</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Profesores" asp-action="Index">Profesores</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Usuarios" asp-action="Index">Usuarios</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Inscripciones" asp-action="Index">Inscripciones</a>
-                        </li>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav justify-content-center w-100">
+
+                        @{
+                            var controllerActual = ViewContext.RouteData.Values["controller"]?.ToString();
+                            var actionActual = ViewContext.RouteData.Values["action"]?.ToString();
+                        }
+
+                        <ul class="navbar-nav justify-content-center w-100">
+
+                            @if(User.IsInRole("Administrador"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerActual == "Home" ? "active-link" : "")" 
+                                    asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerActual == "Clases" ? "active-link" : "")" 
+                                    asp-area="" asp-controller="Clases" asp-action="Index">Clases</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerActual == "Profesores" ? "active-link" : "")" 
+                                    asp-area="" asp-controller="Profesores" asp-action="Index">Profesores</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerActual == "Usuarios" ? "active-link" : "")" 
+                                    asp-area="" asp-controller="Usuarios" asp-action="Index">Usuarios</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerActual == "Inscripciones" ? "active-link" : "")" 
+                                    asp-area="" asp-controller="Inscripciones" asp-action="Index">Inscripciones</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerActual == "Planes" ? "active-link" : "")" 
+                                    asp-area="" asp-controller="Planes" asp-action="Index">Planes</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerActual == "Suscripciones" ? "active-link" : "")" 
+                                    asp-area="" asp-controller="Suscripciones" asp-action="Index">Suscripciones</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerActual == "Pagos" ? "active-link" : "")" 
+                                    asp-area="" asp-controller="Pagos" asp-action="Index">Pagos</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerActual == "Usuarios" && actionActual == "Inicio" ? "active-link" : "")" 
+                                    asp-area="" asp-controller="Usuarios" asp-action="Inicio">Inicio</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerActual == "Usuarios" && actionActual == "Perfil" ? "active-link" : "")" 
+                                    asp-area="" asp-controller="Usuarios" asp-action="Perfil">Perfil</a>
+                                </li>
+                            }
+
+                        </ul>
+                        
                     </ul>
+                    <div class="nav-item dropdown ms-auto d-flex align-items-center gap-2">
+                            <span class="mb-0 p-0" style="font-size: 0.9rem;color:var(--primary-fixed-dim);">@User.Identity?.Name</span>
+                            <a class="nav-link dropdown-toggle p-0" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @{
+                                        var avatarClaim = User.FindFirst("Avatar")?.Value;
+                                        var avatarUrl = string.IsNullOrEmpty(avatarClaim) 
+                                            ? Url.Content("~/uploads/defecto.webp") 
+                                            : Url.Content(avatarClaim);
+                                    }
+                                <img src="@avatarUrl" class="rounded-circle" height="45" alt="Avatar" />
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="/Usuarios/Perfil">Perfil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/salir">Salir</a></li>
+                            </ul>
+                    </div>
+                    
                 </div>
             </div>
         </nav>
+        }
+        
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="container" style="margin-top: 40px;">
+        <main role="main" class="pb-3 roboto-regular">
             @RenderBody()
         </main>
     </div>
@@ -54,6 +129,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,88 @@
+@model Gimnasio.Models.Usuario
+@{
+    ViewData["Title"] = "Crear Alumno";
+}
+
+
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+    <h1 style="color:#e5e2e1; margin:0;">Crear Nuevo Alumno</h1>
+</header>
+
+<div style="display:flex; justify-content:center;">
+    <div class="card" style="width:100%; max-width:600px;">
+        <form asp-action="CreateAlumn" asp-controller="Usuarios" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                    <label placeholder="Ingresa el nombre completo" class="control-label">Nombre completo</label>
+                    <input asp-for="nombre" class="form-control" />
+                    <span asp-validation-for="nombre" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                    <label placeholder="Ingresa las observaciones" class="control-label">Observaciones</label>
+                    <input asp-for="observaciones" class="form-control" />
+                    <span asp-validation-for="observaciones" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                    <label asp-for="dni" class="control-label">DNI</label>
+                    <input asp-for="dni" class="form-control" />
+                    <span asp-validation-for="dni" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Seleccionar Plan</label>
+                <select id="planSelect" name="idPlan" required>
+                    <option value="">-- Selecciona un plan --</option>
+                    @foreach (var plan in ViewBag.Planes)
+                    {
+                        <option value="@plan.id" data-precio="@plan.precio">@plan.nombre</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                    <label>Precio del plan</label>
+                    <input id="precioInput" type="text" readonly />
+            </div>
+            
+
+            <div class="alert alert-info">
+                <strong style="color:var(--tertiary-fixed);">Nota:</strong> El alumno se registrará con el plan seleccionado. La suscripción se activará automáticamente por 1 mes.
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <button type="submit" class="btn btn-primary" style="flex:1;">Crear Alumno</button>
+                <a href="/" class="btn btn-ghost" style="flex:1;">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        const planSelect = document.getElementById('planSelect');
+        const precioInput = document.getElementById('precioInput');
+
+        // Escuchar cambios en el select
+        planSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const precio = selectedOption.getAttribute('data-precio');
+            
+            if (precio) {
+                // Formatear el precio con 2 decimales y símbolo de moneda
+                precioInput.value = '$' + parseFloat(precio).toFixed(2);
+            } else {
+                precioInput.value = '';
+            }
+        });
+
+        // Limpiar precio al cargar si no hay plan seleccionado
+        window.addEventListener('load', function() {
+            if (planSelect.value === '') {
+                precioInput.value = '';
+            }
+        });
+    </script>
+}

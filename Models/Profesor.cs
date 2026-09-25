@@ -10,14 +10,14 @@ namespace Gimnasio.Models
     public class Profesor
     {
         public int id { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Debe ingresar un nombre")]
         public string nombre { get; set; } = string.Empty;
-        [Required]
+        [Required(ErrorMessage = "Debe ingresar una especialidad")]
         public string especialidad { get; set; } = string.Empty;
-        [Required]
-        public string rutaFoto { get; set; } = string.Empty;
+        public string? rutaFoto { get; set; } = string.Empty;
 
 
         public ICollection<Clase> Clases { get; set; } = new List<Clase>();
+        public ICollection<Rutina> Rutinas { get; set; } = new List<Rutina>();
     }
 }

@@ -7,22 +7,37 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Gimnasio.Data;
 using Gimnasio.Models;
+using Gimnasio.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Gimnasio.Controllers
 {
+    [Authorize(Roles = "Administrador")]
     public class ClasesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IClaseService claseService;
+        private readonly IProfesorService profesorService;
+        private readonly IUsuarioService usuarioService;
+        private readonly ISuscripcionService suscripcionService;
 
-        public ClasesController(ApplicationDbContext context)
+        public ClasesController(IClaseService claseService, IProfesorService profesorService,
+         IUsuarioService usuarioService, ISuscripcionService suscripcionService)
         {
-            _context = context;
+            this.claseService = claseService;
+            this.profesorService = profesorService;
+            this.usuarioService = usuarioService;
+            this.suscripcionService = suscripcionService;
+        }
+        private async Task CargarViewBags()
+        {
+            ViewBag.Profesores = new SelectList(
+                await profesorService.ObtenerTodos(), "id", "nombre");
         }
 
         // GET: Clases
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Clases.ToListAsync());
+            return View(await claseService.ObtenerTodos());
         }
 
         // GET: Clases/Details/5
@@ -33,8 +48,7 @@ namespace Gimnasio.Controllers
                 return NotFound();
             }
 
-            var clase = await _context.Clases
-                .FirstOrDefaultAsync(m => m.id == id);
+            var clase = await claseService.ObtenerPorId(id.Value);
             if (clase == null)
             {
                 return NotFound();
@@ -44,8 +58,9 @@ namespace Gimnasio.Controllers
         }
 
         // GET: Clases/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            await CargarViewBags();
             return View();
         }
 
@@ -54,12 +69,13 @@ namespace Gimnasio.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,nombre,descripcion,horario,idprofesor,capacidad")] Clase clase)
+        public async Task<IActionResult> Create([Bind("id,nombre,descripcion,horario,dias_semana,hora_inicio,hora_fin,idprofesor,capacidad")] Clase clase)
         {
+            
             if (ModelState.IsValid)
             {
-                _context.Add(clase);
-                await _context.SaveChangesAsync();
+                await claseService.Crear(clase);
+
                 return RedirectToAction(nameof(Index));
             }
             return View(clase);
@@ -73,7 +89,7 @@ namespace Gimnasio.Controllers
                 return NotFound();
             }
 
-            var clase = await _context.Clases.FindAsync(id);
+            var clase = await claseService.ObtenerPorId(id.Value);
             if (clase == null)
             {
                 return NotFound();
@@ -86,7 +102,7 @@ namespace Gimnasio.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id,nombre,descripcion,horario,idprofesor,capacidad")] Clase clase)
+        public async Task<IActionResult> Edit(int id, [Bind("id,nombre,descripcion,horario,dias_semana,hora_inicio,hora_fin,idprofesor,capacidad")] Clase clase)
         {
             if (id != clase.id)
             {
@@ -97,12 +113,11 @@ namespace Gimnasio.Controllers
             {
                 try
                 {
-                    _context.Update(clase);
-                    await _context.SaveChangesAsync();
+                    await claseService.Actualizar(clase);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ClaseExists(clase.id))
+                    if (!await ClaseExists(clase.id))
                     {
                         return NotFound();
                     }
@@ -124,8 +139,7 @@ namespace Gimnasio.Controllers
                 return NotFound();
             }
 
-            var clase = await _context.Clases
-                .FirstOrDefaultAsync(m => m.id == id);
+            var clase = await claseService.ObtenerPorId(id.Value);
             if (clase == null)
             {
                 return NotFound();
@@ -139,19 +153,58 @@ namespace Gimnasio.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var clase = await _context.Clases.FindAsync(id);
+            var clase = await claseService.ObtenerPorId(id);
             if (clase != null)
             {
-                _context.Clases.Remove(clase);
+                await claseService.Eliminar(clase.id);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
-        private bool ClaseExists(int id)
+        public class MarcarAsistenciaDto
         {
-            return _context.Clases.Any(e => e.id == id);
+            public int idClase { get; set; }
+            public string Dni { get; set; } = string.Empty;
+        }
+        [HttpPost]
+        public async Task<IActionResult> MarcarAsistencia([FromBody] MarcarAsistenciaDto dto)
+        {
+            var resultado = await claseService.MarcarAsistencia(dto.idClase, dto.Dni);
+
+            if (!resultado.Exito)
+            {
+                return Ok(new { exito = false, mensaje = resultado.Mensaje });
+            }
+
+            var usuario = await usuarioService.ObtenerPorDni(dto.Dni);
+            if (usuario == null)
+            {
+                return Ok(new { exito = true, mensaje = "Check-in registrado con éxito." });
+            }
+
+            Suscripcion? suscripcion = null;
+            try
+            {
+                suscripcion = await suscripcionService.ObtenerSuscripcionActiva(usuario.id);
+            }
+            catch { }
+
+            var mensaje = $"¡Bienvenido, {usuario.nombre}!\n" +
+                        $"Plan: {suscripcion?.Plan?.nombre ?? "Sin plan"}\n" +
+                        $"Clases restantes: {(suscripcion?.clases_restantes?.ToString() ?? "Pase libre")}\n" +
+                        $"Fecha de vencimiento: {(suscripcion?.fecha_fin.ToString("dd/MM/yyyy") ?? "N/A")}";
+
+
+            return Ok(new
+            {
+                exito = true,
+                mensaje = mensaje
+            });
+        }
+
+        private async Task<bool> ClaseExists(int id)
+        {
+            return await claseService.ObtenerPorId(id) != null;
         }
     }
 }

@@ -1,0 +1,475 @@
+@model Gimnasio.Models.ViewModels.InicioView
+
+@{
+    ViewData["Title"] = "Mi Dashboard";
+    var fechaAnterior = Model.FechaSeleccionada.AddDays(-1);
+    var fechaSiguiente = Model.FechaSeleccionada.AddDays(1);
+    Dictionary<DayOfWeek, string>? diasSemana = new Dictionary<DayOfWeek, string>
+    {
+        { DayOfWeek.Monday,    "Lunes" },
+        { DayOfWeek.Tuesday,   "Martes" },
+        { DayOfWeek.Wednesday, "Miércoles" },
+        { DayOfWeek.Thursday,  "Jueves" },
+        { DayOfWeek.Friday,    "Viernes" },
+        { DayOfWeek.Saturday,  "Sábado" },
+        { DayOfWeek.Sunday,    "Domingo" }
+    };
+}
+
+<style>
+    .dashboard-wrapper {
+        margin-top: 70px;
+        padding: 0 16px;
+    }
+
+    .dashboard-header-user {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: var(--spacing-xl);
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .bento-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .clase-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-sm);
+        border-radius: var(--rounded-md);
+        border-left: 2px solid var(--primary-fixed-dim);
+        transition: background 0.3s ease;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .clase-item-info {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .clase-item-icon {
+        background: var(--surface-container-high);
+        padding: var(--spacing-sm);
+        border-radius: var(--rounded-md);
+        flex-shrink: 0;
+    }
+
+    .nav-fecha {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: var(--spacing-md);
+        flex-wrap: wrap;
+    }
+
+    .nav-fecha-controles {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+    }
+
+    /* Sección de clases con scroll */
+    .clases-scroll-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 8px;
+        margin-right: -8px;
+    }
+
+    .clases-scroll-container::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .clases-scroll-container::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.03);
+        border-radius: 4px;
+    }
+
+    .clases-scroll-container::-webkit-scrollbar-thumb {
+        background: rgba(171,214,0,0.3);
+        border-radius: 4px;
+    }
+
+    .clases-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(171,214,0,0.5);
+    }
+
+    .clases-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .modal-contenido {
+        background: var(--surface-container);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: var(--rounded-lg);
+        padding: var(--spacing-lg);
+        width: 100%;
+        max-width: 420px;
+        box-sizing: border-box;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @@media (max-width: 992px) {
+        .bento-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-wrapper {
+            padding: 0 12px;
+        }
+
+        .dashboard-header-user h1 {
+            font-size: 26px;
+        }
+
+        .clase-item {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .clase-item-info {
+            min-width: 100%;
+        }
+
+        .clases-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .clases-scroll-container {
+            max-height: 500px;
+        }
+
+        .nav-fecha {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .nav-fecha-controles {
+            margin-left: 0;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .nav-fecha-controles span {
+            min-width: auto !important;
+            flex: 1;
+        }
+
+        .modal-contenido {
+            margin: 0 12px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .clase-item-icon img {
+            width: 36px;
+            height: 36px;
+        }
+    }
+</style>
+
+<div id="modal-inscripcion" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+    <div class="modal-contenido">
+        <h3 style="margin:0 0 var(--spacing-md) 0;">Confirmar Inscripción</h3>
+        <p id="modal-texto-inscripcion" style="color:var(--on-surface-variant); margin-bottom:var(--spacing-lg);"></p>
+        <div style="display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap;">
+            <button onclick="cerrarModalInscripcion()" class="btn btn-ghost">Cancelar</button>
+            <button onclick="confirmarInscripcion()" class="btn btn-primary">Inscribirme</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-cancelar" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+    <div class="modal-contenido">
+        <h3 style="margin:0 0 var(--spacing-md) 0;">Cancelar Inscripción</h3>
+        <p id="modal-texto-cancelar" style="color:var(--on-surface-variant); margin-bottom:var(--spacing-lg);"></p>
+        <div style="display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap;">
+            <button onclick="cerrarModalCancelacion()" class="btn btn-ghost">Cerrar</button>
+            <button onclick="cancelarInscripcion()" class="btn btn-primary">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-wrapper">
+
+    <header class="dashboard-header-user">
+        <div>
+            <h1 style="color:#e5e2e1; margin:0;">Hola, @User.Identity?.Name</h1>
+            <p style="color:var(--on-surface-variant); margin:8px 0 0 0;">@DateTime.Today.ToString("dddd, dd 'de' MMMM", new System.Globalization.CultureInfo("es-AR"))</p>
+        </div>
+    </header>
+
+    <div class="bento-grid">
+
+        @if (Model.Suscripcion != null)
+        {
+            var diasRestantes = (Model.Suscripcion.fecha_fin - DateTime.Today).Days;
+            <div class="card" style="border-left:4px solid var(--primary-fixed-dim); display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--spacing-md); flex-wrap:wrap; gap:8px;">
+                        <span style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--on-surface-variant); text-transform:uppercase;">Membresía</span>
+                        <div style="display:flex; align-items:center; gap:4px; padding:4px 10px; background:rgba(195,244,0,0.1); color:var(--primary-fixed-dim); border-radius:999px; font-size:11px; font-weight:700; border:1px solid rgba(195,244,0,0.2);">
+                            <span style="width:8px; height:8px; border-radius:50%; background:var(--primary-fixed-dim); display:inline-block; animation:pulse 2s infinite;"></span>
+                            ACTIVA
+                        </div>
+                    </div>
+
+                    <div style="font-size:22px; font-weight:700; color:var(--primary-fixed-dim); margin-bottom:4px;">
+                        @Model.Suscripcion.Plan?.nombre
+                    </div>
+                    <div style="color:var(--on-surface-variant); font-size:14px; margin-bottom:var(--spacing-md);">
+                        Vence el @Model.Suscripcion.fecha_fin.ToString("dd/MM/yyyy")
+                    </div>
+
+                    @if (Model.Suscripcion.clases_restantes.HasValue)
+                    {
+                        <div style="font-size:42px; font-weight:700; color:var(--primary-fixed-dim); line-height:1;">@Model.Suscripcion.clases_restantes</div>
+                        <div style="color:var(--on-surface-variant); font-size:12px;">clases restantes</div>
+                    }
+                    else
+                    {
+                        <div style="font-size:18px; font-weight:700; color:var(--primary-fixed-dim);">Pase Libre</div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card" style="display:flex; align-items:center; justify-content:center;">
+                <div class="alert alert-warning" style="margin:0;">
+                    No tenés una suscripción activa. Consultar en recepcion.
+                </div>
+            </div>
+        }
+
+        <div class="card" style="display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--spacing-md);">
+                <span style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--on-surface-variant); text-transform:uppercase;">Tus Clases de Hoy</span>
+                <span style="color:var(--primary-fixed-dim); font-size:20px;">
+                    <img width="30" height="30" src="https://img.icons8.com/officexs/30/calendar.png" alt="calendar"/>
+                </span>
+            </div>
+
+            @if (Model.MisClasesHoy.Any())
+            {
+                <div style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; max-height:300px;">
+                    @foreach (var inscripcion in Model.MisClasesHoy)
+                    {
+                        <div class="clase-item"
+                             onmouseover="this.style.background='rgba(255,255,255,0.05)'"
+                             onmouseout="this.style.background='transparent'">
+                            <div class="clase-item-info">
+                                <div class="clase-item-icon">
+                                    <img width="50" height="50" src="https://img.icons8.com/claude-hand-drawn/50/barbell.png" alt="barbell"/>
+                                </div>
+                                <div>
+                                    <div style="font-weight:700; color:#e5e2e1; font-size:14px;">@inscripcion.Clase?.nombre</div>
+                                    <div style="color:var(--on-surface-variant); font-size:12px; margin-top:2px;">
+                                        🕐 @inscripcion.Clase?.hora_inicio.ToString(@"hh\:mm") — @inscripcion.Clase?.hora_fin.ToString(@"hh\:mm")
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="flex-shrink:0;">
+                                <button class="btn btn-warning" style="width:100%;" onclick="abrirModalCancelacion(@inscripcion.id, '@inscripcion.Clase?.nombre')">
+                                    Cancelar inscripcion
+                                </button>
+                                <span style="display:block; font-size:10px; color:var(--on-surface-variant); margin-top:4px; text-align:center;">
+                                    Se necesitan 2 horas de anticipación para cancelar.
+                                </span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div style="flex:1; display:flex; align-items:center; justify-content:center; color:var(--on-surface-variant); text-align:center; padding:var(--spacing-lg);">
+                    <div>
+                        <div style="font-size:32px; margin-bottom:8px;">📋</div>
+                        <p style="margin:0; font-size:14px;">No tenés clases inscriptas hoy.</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+
+    <div class="nav-fecha">
+        <h3 style="margin:0;">Clases disponibles</h3>
+        <div class="nav-fecha-controles">
+            @if (Model.FechaSeleccionada > DateTime.Today)
+            {
+                <a asp-action="Inicio" asp-route-fecha="@fechaAnterior.ToString("yyyy-MM-dd")" class="btn btn-ghost" style="padding:6px 12px;">←</a>
+            }
+            <span style="color:#e5e2e1; font-weight:700; min-width:180px; text-align:center;">
+                @diasSemana[Model.FechaSeleccionada.DayOfWeek], @Model.FechaSeleccionada.ToString("dd/MM/yyyy")
+            </span>
+            <a asp-action="Inicio" asp-route-fecha="@fechaSiguiente.ToString("yyyy-MM-dd")" class="btn btn-ghost" style="padding:6px 12px;">→</a>
+        </div>
+    </div>
+
+    @if (Model.ClasesDelDia.Any())
+    {
+        <div class="clases-scroll-container">
+            <div class="clases-grid">
+                @foreach (var clase in Model.ClasesDelDia)
+                {
+                    var yaInscripto = Model.ClasesInscriptas.Contains(clase.id);
+                    var inscriptosHoy = Model.InscriptosPorClase.GetValueOrDefault(clase.id, 0);
+                    var cerrada = Model.ClasesCerradas.Contains(clase.id);
+                    var llena = inscriptosHoy >= clase.capacidad || cerrada;
+
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
+                            <div style="font-weight:700; color:#e5e2e1; font-size:16px;">@clase.nombre</div>
+                            @if (yaInscripto)
+                            {
+                                <span style="background:rgba(171,214,0,0.15); color:#abd600; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; white-space:nowrap;">✓ Inscripto</span>
+                            }
+                            else if (llena || cerrada)
+                            {
+                                <span style="background:rgba(255,180,171,0.15); color:#ffb4ab; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; white-space:nowrap;">Sin Cupos</span>
+                            }
+                        </div>
+                        <div style="color:var(--on-surface-variant); font-size:13px; margin-bottom:4px;">
+                            @clase.hora_inicio.ToString(@"hh\:mm") — @clase.hora_fin.ToString(@"hh\:mm")
+                        </div>
+                        <div style="color:var(--on-surface-variant); font-size:13px; margin-bottom:4px;">
+                            Prof. @clase.Profesor?.nombre
+                        </div>
+                        <div style="color:var(--on-surface-variant); font-size:13px; margin-bottom:16px;">
+                            @(cerrada ? "Sin Cupos" : $"{inscriptosHoy} / {clase.capacidad} lugares ocupados")
+                        </div>
+
+                        @if (!yaInscripto && !llena && Model.Suscripcion != null)
+                        {
+                            <button onclick="abrirModalInscripcion(@clase.id, '@clase.nombre')" class="btn btn-primary" style="width:100%;">
+                                Inscribirme
+                            </button>
+                        }
+                        else if (Model.Suscripcion == null)
+                        {
+                            <button disabled class="btn btn-outline-danger" style="width:100%; opacity:0.5;">
+                                Sin suscripción activa
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="text-align:center; padding:60px 20px; color:var(--on-surface-variant);">
+            <div style="font-size:48px; margin-bottom:16px;">📅</div>
+            <p style="margin:0;">No hay clases disponibles este día.</p>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+<script>
+    let idClaseSeleccionada = null;
+    let idInscripcionSeleccionada = null;
+
+    function abrirModalInscripcion(idClase, nombreClase) {
+        idClaseSeleccionada = idClase;
+        document.getElementById('modal-texto-inscripcion').textContent = 
+            `¿Confirmas tu inscripción a "${nombreClase}"?`;
+        document.getElementById('modal-inscripcion').style.display = 'flex';
+    }
+
+    function cerrarModalInscripcion() {
+        document.getElementById('modal-inscripcion').style.display = 'none';
+        idClaseSeleccionada = null;
+    }
+
+    function abrirModalCancelacion(idInscripcion, nombreClase) {
+        idInscripcionSeleccionada = idInscripcion;
+        document.getElementById('modal-texto-cancelar').textContent = 
+            `¿Confirmas la cancelación a la clase "${nombreClase}"?`;
+        document.getElementById('modal-cancelar').style.display = 'flex';
+    }
+
+    function cerrarModalCancelacion() {
+        document.getElementById('modal-cancelar').style.display = 'none';
+        idInscripcionSeleccionada = null;
+    }
+
+    async function confirmarInscripcion() {
+        if (!idClaseSeleccionada) return;
+
+        try {
+            const res = await fetch('/Usuarios/Inscribirse', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idClase: idClaseSeleccionada, fecha: '@Model.FechaSeleccionada.ToString("yyyy-MM-dd")' })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                cerrarModalInscripcion();
+                location.reload();
+            } else {
+                alert(data.mensaje || 'Error al inscribirse.');
+                cerrarModalInscripcion();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error al procesar la solicitud.');
+            cerrarModalInscripcion();
+        }
+    }
+
+    async function cancelarInscripcion() {
+        if (!idInscripcionSeleccionada) return;
+
+        try {
+            const res = await fetch('/Usuarios/CancelarInscripcion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idInscripcion: idInscripcionSeleccionada })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                location.reload();
+            } else {
+                alert(data.mensaje || 'Error al cancelar la inscripción.');
+                cerrarModalCancelacion();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error al procesar la solicitud.');
+        }
+    }
+
+    document.getElementById('modal-inscripcion').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalInscripcion();
+    });
+
+    document.getElementById('modal-cancelar').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalCancelacion();
+    });
+</script>
+}

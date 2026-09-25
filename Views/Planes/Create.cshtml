@@ -1,0 +1,50 @@
+@model Gimnasio.Models.Plan
+
+@{
+    ViewData["Title"] = "Crear Plan";
+}
+
+<main style="width: 100%; max-width: 800px; margin: 0 auto; padding: 32px; margin-top: 70px;">
+    <header style="margin-bottom: 40px;">
+        <h1 style="color: #e5e2e1; margin: 0 0 8px 0;">Crear nuevo plan</h1>
+        <p style="color: #abd600; margin: 0; font-size: 14px;">Completa los detalles del plan de suscripción</p>
+    </header>
+
+    <section style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 32px;">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" style="background: rgba(255, 180, 171, 0.2); color: #ffb4ab; padding: 12px; border-radius: 8px; margin-bottom: 24px; display: none;"></div>
+            
+            <div style="margin-bottom: 24px;">
+                <label asp-for="nombre" style="display: block; color: #e5e2e1; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Nombre del plan</label>
+                <input asp-for="nombre" style="width: 100%; padding: 12px; background: rgba(19, 19, 19, 0.8); color: #e5e2e1; border: 1px solid rgba(171, 214, 0, 0.3); border-radius: 8px; font-size: 14px; box-sizing: border-box; transition: all 0.3s ease;" onmouseover="this.style.borderColor='#abd600'" onmouseout="this.style.borderColor='rgba(171, 214, 0, 0.3)'" />
+                <span asp-validation-for="nombre" style="color: #ffb4ab; font-size: 12px; margin-top: 4px; display: block;"></span>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label asp-for="limite_clases" style="display: block; color: #e5e2e1; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Límite de clases (null para ilimitado)</label>
+                <input asp-for="limite_clases" type="number" style="width: 100%; padding: 12px; background: rgba(19, 19, 19, 0.8); color: #e5e2e1; border: 1px solid rgba(171, 214, 0, 0.3); border-radius: 8px; font-size: 14px; box-sizing: border-box; transition: all 0.3s ease;" onmouseover="this.style.borderColor='#abd600'" onmouseout="this.style.borderColor='rgba(171, 214, 0, 0.3)'" />
+                <span asp-validation-for="limite_clases" style="color: #ffb4ab; font-size: 12px; margin-top: 4px; display: block;"></span>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label asp-for="precio" style="display: block; color: #e5e2e1; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Precio</label>
+                <input asp-for="precio" type="number" step="0.01" style="width: 100%; padding: 12px; background: rgba(19, 19, 19, 0.8); color: #e5e2e1; border: 1px solid rgba(171, 214, 0, 0.3); border-radius: 8px; font-size: 14px; box-sizing: border-box; transition: all 0.3s ease;" onmouseover="this.style.borderColor='#abd600'" onmouseout="this.style.borderColor='rgba(171, 214, 0, 0.3)'" />
+                <span asp-validation-for="precio" style="color: #ffb4ab; font-size: 12px; margin-top: 4px; display: block;"></span>
+            </div>
+            <div style="margin-bottom: 24px;">
+                <label asp-for="descripcion" style="display: block; color: #e5e2e1; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Descripción</label>
+                <input asp-for="descripcion" style="width: 100%; padding: 12px; background: rgba(19, 19, 19, 0.8); color: #e5e2e1; border: 1px solid rgba(171, 214, 0, 0.3); border-radius: 8px; font-size: 14px; box-sizing: border-box; transition: all 0.3s ease;" onmouseover="this.style.borderColor='#abd600'" onmouseout="this.style.borderColor='rgba(171, 214, 0, 0.3)'" />
+                <span asp-validation-for="descripcion" style="color: #ffb4ab; font-size: 12px; margin-top: 4px; display: block;"></span>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 32px;">
+                <button type="submit" class="btn-header" style="flex: 1; text-align: center; padding: 12px 24px; background: #abd600; color: #131313; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='#CCFF00'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='#abd600'; this.style.transform='scale(1)'">Crear Plan</button>
+                <a href="/Planes" style="flex: 1; text-align: center; padding: 12px 24px; background: rgba(255, 255, 255, 0.1); color: #e5e2e1; border: 1px solid rgba(171, 214, 0, 0.3); border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='rgba(171, 214, 0, 0.2)'; this.style.borderColor='#abd600'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(171, 214, 0, 0.3)'">Cancelar</a>
+            </div>
+        </form>
+    </section>
+</main>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

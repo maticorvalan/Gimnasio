@@ -1,64 +1,97 @@
-@model Gimnasio.Models.Usuario
+    @model Gimnasio.Models.Usuario
+    <style>
+        .placeholder-claro::placeholder {
+            color: #8b8989;
+            opacity: 1;
+        }
+</style>
+    @{
+        ViewData["Title"] = "Edit";
+    }
 
-@{
-    ViewData["Title"] = "Edit";
-}
+    <h1>Edit</h1>
 
-<h1>Edit</h1>
-
-<h4>Usuario</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="id" />
-            <div class="form-group">
-                <label asp-for="nombre" class="control-label"></label>
-                <input asp-for="nombre" class="form-control" />
-                <span asp-validation-for="nombre" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="dni" class="control-label"></label>
-                <input asp-for="dni" class="form-control" />
-                <span asp-validation-for="dni" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="rol" class="control-label"></label>
-                <input asp-for="rol" class="form-control" />
-                <span asp-validation-for="rol" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="password" class="control-label"></label>
-                <input asp-for="password" class="form-control" />
-                <span asp-validation-for="password" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="estado" /> @Html.DisplayNameFor(model => model.estado)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="fecha_alta" class="control-label"></label>
-                <input asp-for="fecha_alta" class="form-control" />
-                <span asp-validation-for="fecha_alta" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ruta_avatar" class="control-label"></label>
-                <input asp-for="ruta_avatar" class="form-control" />
-                <span asp-validation-for="ruta_avatar" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+    <h4>Usuario</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            @if (TempData["Error"] != null)
+            {
+                <div style="color:red;">@TempData["Error"]</div>
+            }
+            <form asp-action="Edit" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="id" />
+                <div class="form-group">
+                    <label asp-for="nombre" class="control-label"></label>
+                    <input asp-for="nombre" class="form-control" />
+                    <span asp-validation-for="nombre" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="observaciones" class="control-label"></label>
+                    <input asp-for="observaciones" class="form-control" />
+                    <span asp-validation-for="observaciones" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="dni" class="control-label"></label>
+                    <input asp-for="dni" class="form-control" />
+                    <span asp-validation-for="dni" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="rol" class="control-label"></label>
+                    <input asp-for="rol" class="form-control" readonly />
+                    <span asp-validation-for="rol" class="text-danger"></span>
+                </div>
+                <div class="form-group form-check">
+                    <label class="form-check-label">
+                        <input class="form-check-input" asp-for="estado" /> @Html.DisplayNameFor(model => model.estado)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Nueva Contraseña</label>
+                    <input type="password" name="nuevaPassword" class="form-control placeholder-claro" placeholder="Dejar vacío para no cambiar"/>
+                </div>
+                <input type="hidden" asp-for="password" />
+                <div class="form-group">
+                    <label asp-for="fecha_alta" class="control-label"></label>
+                    <input asp-for="fecha_alta" class="form-control" type="date" asp-format="{0:yyyy-MM-dd}" />
+                    <span asp-validation-for="fecha_alta" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Foto de perfil</label>
+                    <input type="file" name="avatar" accept="image/*" id="input-avatar" />
+                    
+                    <div style="margin-top:8px;">
+                        @if (!string.IsNullOrEmpty(Model?.ruta_avatar))
+                        {
+                            <img id="preview-avatar" src="@Model.ruta_avatar" 
+                                style="width:80px; height:80px; border-radius:50%; object-fit:cover;" />
+                        }
+                        else
+                        {
+                            <img id="preview-avatar" src="/uploads/defecto.webp" 
+                                style="width:80px; height:80px; border-radius:50%; object-fit:cover;" />
+                        }
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Guardar" class="btn btn-primary" />
+                    <a asp-action="Index" class="btn btn-ghost">Volver</a>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('input-avatar').addEventListener('change', function () {
+            const archivo = this.files[0];
+            if (!archivo) return;
+
+            // Crea una URL temporal para previsualizar sin subir al servidor
+            const url = URL.createObjectURL(archivo);
+            document.getElementById('preview-avatar').src = url;
+        });
+    </script>
 }

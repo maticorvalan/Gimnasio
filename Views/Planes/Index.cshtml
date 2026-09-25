@@ -1,0 +1,49 @@
+@model IEnumerable<Gimnasio.Models.Plan>
+
+@{
+    ViewData["Title"] = "Planes";
+}
+
+<header style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--spacing-xl); width: 100%; margin-top: 70px;">
+    <h1 style="color: #e5e2e1; margin: 0;">Gestión de Planes</h1>
+    <a asp-action="Create" class="btn-header">Agregar Plan</a>
+</header>
+
+<div style="overflow-x: auto;">
+<table class="data-table">
+    <thead>
+        <tr style="background: rgba(171, 214, 0, 0.1); border-bottom: 2px solid #abd600;">
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+                @Html.DisplayNameFor(model => model.nombre)
+            </th>
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+                @Html.DisplayNameFor(model => model.limite_clases)
+            </th>
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+                @Html.DisplayNameFor(model => model.precio)
+            </th>
+            <th style="padding: 16px; text-align: center; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); transition: background 0.3s ease;" onmouseover="this.style.background='rgba(171, 214, 0, 0.05)'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @Html.DisplayFor(modelItem => item.nombre)
+            </td>
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @Html.DisplayFor(modelItem => item.limite_clases)
+            </td>
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @Html.DisplayFor(modelItem => item.precio)
+            </td>
+            <td style="padding: 16px; text-align: center; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <a asp-action="Edit" asp-route-id="@item.id" class="btn-action btn-action-edit">Editar</a>
+                <a asp-action="Details" asp-route-id="@item.id" class="btn-action btn-action-view">Ver</a>
+                <a asp-action="Delete" asp-route-id="@item.id" class="btn-action btn-action-delete">Eliminar</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+</div>

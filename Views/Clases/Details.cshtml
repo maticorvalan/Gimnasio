@@ -1,48 +1,111 @@
 @model Gimnasio.Models.Clase
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles";
 }
 
-<h1>Details</h1>
+<header style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--spacing-xl); width: 100%; margin-top: 70px;">
+    <h1 style="color: #e5e2e1; margin: 0;">Detalles de la Clase</h1>
+</header>
 
-<div>
-    <h4>Clase</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.nombre)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.nombre)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.descripcion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.descripcion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.horario)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.horario)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.idprofesor)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.idprofesor)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.capacidad)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.capacidad)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div style="max-width: 600px; margin: 0 auto;">
+    <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 40px; font-family: 'Roboto', sans-serif;">
+        
+        <!-- Nombre -->
+        <div style="margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #abd600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                @Html.DisplayNameFor(model => model.nombre)
+            </label>
+            <p style="color: #e5e2e1; font-size: 16px; margin: 0;">
+                @Html.DisplayFor(model => model.nombre)
+            </p>
+        </div>
+
+        <!-- Descripción -->
+        <div style="margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #abd600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                @Html.DisplayNameFor(model => model.descripcion)
+            </label>
+            <p style="color: #e5e2e1; font-size: 16px; margin: 0;">
+                @Html.DisplayFor(model => model.descripcion)
+            </p>
+        </div>
+
+        <!-- Días de la Semana -->
+        <div style="margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #abd600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+                Días de la Semana
+            </label>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                @{
+                    var diasArray = Model?.dias_semana?.Split(',') ?? new string[]{};
+                    var diasNombres = new Dictionary<string, string>
+                    {
+                        {"LUN", "Lunes"},
+                        {"MAR", "Martes"},
+                        {"MIE", "Miércoles"},
+                        {"JUE", "Jueves"},
+                        {"VIE", "Viernes"}
+                    };
+                    foreach(var dia in diasNombres)
+                    {
+                        var isSelected = diasArray.Contains(dia.Key);
+                        <span style="background: @(isSelected ? "#abd600" : "rgba(255, 255, 255, 0.05)"); color: @(isSelected ? "#283500" : "#e5e2e1"); padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; border: 1px solid @(isSelected ? "#abd600" : "rgba(255, 255, 255, 0.1)");">
+                            @dia.Value
+                        </span>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Horario -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #abd600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Hora Inicio
+                </label>
+                <p style="color: #e5e2e1; font-size: 16px; margin: 0;">
+                    @Html.DisplayFor(model => model.hora_inicio)
+                </p>
+            </div>
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #abd600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Hora Fin
+                </label>
+                <p style="color: #e5e2e1; font-size: 16px; margin: 0;">
+                    @Html.DisplayFor(model => model.hora_fin)
+                </p>
+            </div>
+        </div>
+
+        <!-- Profesor -->
+        <div style="margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #abd600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                @Html.DisplayNameFor(model => model.idprofesor)
+            </label>
+            <p style="color: #e5e2e1; font-size: 16px; margin: 0;">
+                @Html.DisplayFor(model => model.idprofesor)
+            </p>
+        </div>
+
+        <!-- Capacidad -->
+        <div style="margin-bottom: 32px;">
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #abd600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                @Html.DisplayNameFor(model => model.capacidad)
+            </label>
+            <p style="color: #e5e2e1; font-size: 16px; margin: 0;">
+                @Html.DisplayFor(model => model.capacidad)
+            </p>
+        </div>
+
+        <!-- Botones -->
+        <div style="display: flex; gap: 12px;">
+            <a asp-action="Edit" asp-route-id="@Model?.id" style="flex: 1; background: #CCFF00; color: #283500; padding: 12px 24px; border: 1px solid #CCFF00; border-radius: 8px; font-weight: 700; font-family: 'Roboto', sans-serif; font-size: 14px; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='rgba(195, 244, 0, 0.9)'; this.style.transform='scale(1.02)'" onmouseout="this.style.backgroundColor='#CCFF00'; this.style.transform='scale(1)'">
+                Editar
+            </a>
+            <a asp-action="Index" style="flex: 1; background: rgba(255, 255, 255, 0.05); color: #abd600; padding: 12px 24px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; font-weight: 700; font-family: 'Roboto', sans-serif; font-size: 14px; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='rgba(195, 244, 0, 0.08)'; this.style.transform='scale(1.02)'" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.05)'; this.style.transform='scale(1)'">
+                Volver
+            </a>
+        </div>
+    </div>
 </div>

@@ -1,0 +1,52 @@
+@model Gimnasio.Models.Pago
+
+@{
+    ViewData["Title"] = "Eliminar Pago";
+}
+
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+    <h1 style="color:#e5e2e1; margin:0;">Eliminar Pago</h1>
+    <a asp-action="Index" class="btn-action btn-action-view">← Volver</a>
+</header>
+
+<div class="card" style="max-width:520px;">
+    <div style="margin-bottom:var(--spacing-md); padding:var(--spacing-md); background:rgba(255,180,171,0.08); border:1px solid rgba(255,180,171,0.3); border-radius:var(--rounded-md);">
+        <p style="color:var(--error); font-weight:700; margin:0 0 4px 0;">¿Estás seguro?</p>
+        <p style="color:var(--on-surface-variant); margin:0; font-size:14px;">Esta acción no se puede deshacer.</p>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--spacing-md); margin-bottom:var(--spacing-lg);">
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Usuario</div>
+            <div style="color:#e5e2e1; font-size:16px;">@(Model.Usuario?.nombre ?? $"ID {Model.idusuario}")</div>
+        </div>
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Plan</div>
+            <div style="color:#e5e2e1; font-size:16px;">@(Model.Suscripcion?.Plan?.nombre ?? "Sin plan asociado")</div>
+        </div>
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Monto</div>
+            <div style="color:var(--primary-fixed-dim); font-size:20px; font-weight:700;">$@Model.monto.ToString("N2")</div>
+        </div>
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Fecha</div>
+            <div style="color:#e5e2e1; font-size:16px;">@Model.fecha_pago.ToString("dd/MM/yyyy")</div>
+        </div>
+
+        <div>
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Método</div>
+            <div style="color:#e5e2e1; font-size:16px;">@Model.metodo_pago</div>
+        </div>
+
+    </div>
+
+    <form asp-action="Delete" style="display:flex; gap:12px;">
+        <input type="hidden" asp-for="id" />
+        <input type="submit" value="Sí, eliminar" class="btn btn-danger" />
+        <a asp-action="Index" class="btn btn-ghost">Cancelar</a>
+    </form>
+</div>

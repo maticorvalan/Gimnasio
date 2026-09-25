@@ -1,0 +1,66 @@
+@model IEnumerable<Gimnasio.Models.Inscripcion>
+
+@{
+	ViewData["Title"] = "Ingresos";
+	var fechaSeleccionada = (DateTime)(ViewBag.FechaSeleccionada ?? DateTime.Today);
+	var totalIngresos = ViewBag.TotalIngresos ?? 0;
+}
+
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px; gap:16px; flex-wrap:wrap;">
+	<div>
+		<h1 style="color:#e5e2e1; margin:0;">Ingresos</h1>
+		<p style="margin:8px 0 0 0; color:var(--on-surface-variant);">Personas que ingresaron el día seleccionado.</p>
+	</div>
+
+	<form asp-action="Ingresos" method="get" style="display:flex; gap:12px; align-items:end; flex-wrap:wrap;">
+		<div>
+			<label for="fecha" style="display:block; margin-bottom:6px; color:#e5e2e1; font-weight:600;">Fecha</label>
+			<input type="date"
+				   id="fecha"
+				   name="fecha"
+				   value="@fechaSeleccionada.ToString("yyyy-MM-dd")"
+				   style="padding:12px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.12); background:#131313; color:#e5e2e1;" />
+		</div>
+		<button type="submit" class="btn-header">Buscar</button>
+	</form>
+</header>
+
+<section style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:24px; margin-bottom:24px;">
+	<div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:24px;">
+		<p style="margin:0 0 8px 0; font-size:11px; font-weight:700; color:var(--on-surface-variant); text-transform:uppercase; letter-spacing:0.05em;">Total de ingresos</p>
+		<div style="font-size:32px; font-weight:700; color:var(--primary-fixed-dim);">@totalIngresos</div>
+	</div>
+</section>
+
+<div style="overflow-x:auto;">
+	<table class="data-table">
+		<thead>
+			<tr>
+				<th>Usuario</th>
+				<th>Clase</th>
+				<th>Fecha</th>
+				<th>Hora de ingreso</th>
+			</tr>
+		</thead>
+		<tbody>
+		@if (Model != null && Model.Any())
+		{
+			foreach (var item in Model)
+			{
+				<tr>
+					<td style="font-weight:600;">@(item.Usuario?.nombre ?? "No se encuentra")</td>
+					<td class="text-white">@(item.Clase?.nombre ?? "No se encuentra")</td>
+					<td class="text-white">@item.fecha_checkin?.ToString("dd/MM/yyyy")</td>
+					<td class="text-white">@item.fecha_checkin?.ToString("HH:mm")</td>
+				</tr>
+			}
+		}
+		else
+		{
+			<tr>
+				<td colspan="4" style="text-align:center; color:var(--on-surface-variant);">No hay ingresos para la fecha seleccionada.</td>
+			</tr>
+		}
+		</tbody>
+	</table>
+</div>

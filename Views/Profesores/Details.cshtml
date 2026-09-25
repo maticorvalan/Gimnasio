@@ -1,36 +1,53 @@
 @model Gimnasio.Models.Profesor
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalle de Profesor";
 }
 
-<h1>Details</h1>
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+    <h1 style="color:#e5e2e1; margin:0;">Detalle de Profesor</h1>
+</header>
 
-<div>
-    <h4>Profesor</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.nombre)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.nombre)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.especialidad)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.especialidad)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.rutaFoto)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.rutaFoto)
-        </dd>
-    </dl>
+<div style="display:flex; justify-content:center;">
+<div class="card" style="width:100%; max-width:520px;">
+
+    @if (!string.IsNullOrEmpty(Model?.rutaFoto))
+    {
+        <div style="display:flex; justify-content:center; margin-bottom:var(--spacing-lg);">
+            <img src="@Model.rutaFoto" 
+                 style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-fixed-dim);" />
+        </div>
+    }
+    else
+    {
+        <div style="display:flex; justify-content:center; margin-bottom:var(--spacing-lg);">
+            <img src="/uploads/defecto.webp" 
+                 style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-fixed-dim);" />
+        </div>
+    }
+
+    <div style="display:flex; flex-direction:column; gap:var(--spacing-md);">
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:15px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Nombre</div>
+            <div style="color:#e5e2e1; font-size:25px;">@Model?.nombre</div>
+        </div>
+
+        <div>
+            <div style="font-size:15px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Especialidad</div>
+            <div>
+                <span style="background:rgba(171,214,0,0.15); color:var(--primary-fixed-dim); padding:3px 12px; border-radius:999px; font-size:22px; font-weight:700;">
+                    @Model?.especialidad
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="display:flex; gap:12px; margin-top:var(--spacing-lg); justify-content:center;">
+        <a asp-action="Edit" asp-route-id="@Model?.id" class="btn btn-primary">Editar</a>
+        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    </div>
+
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
 </div>

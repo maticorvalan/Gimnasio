@@ -1,51 +1,59 @@
 @model Gimnasio.Models.Clase
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Eliminar";
 }
 
-<h1>Delete</h1>
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+    <h1 style="color:#e5e2e1; margin:0;">Eliminar Clase</h1>
+</header>
+<div style="display:flex; justify-content:center;">
+    <div class="card" style="width:100%; max-width:520px;">
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Clase</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.nombre)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.nombre)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.descripcion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.descripcion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.horario)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.horario)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.idprofesor)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.idprofesor)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.capacidad)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.capacidad)
-        </dd>
-    </dl>
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:12px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Nombre</div>
+            <div style="color:#e5e2e1; font-size:20px;">@Model?.nombre</div>
+        </div>
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:12px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Descripcion</div>
+            <div style="color:#e5e2e1; font-size:20px;">@Model?.descripcion</div>
+        </div>
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:12px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Dias de la Semana </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                @{
+                    var diasArray = Model?.dias_semana?.Split(',') ?? new string[]{};
+                    var diasNombres = new Dictionary<string, string>
+                    {
+                        {"LUN", "Lunes"},
+                        {"MAR", "Martes"},
+                        {"MIE", "Miércoles"},
+                        {"JUE", "Jueves"},
+                        {"VIE", "Viernes"}
+                    };
+                    foreach(var dia in diasNombres)
+                    {
+                        var isSelected = diasArray.Contains(dia.Key);
+                        <span style="background: @(isSelected ? "#abd600" : "rgba(255, 255, 255, 0.05)"); color: @(isSelected ? "#283500" : "#e5e2e1"); padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; border: 1px solid @(isSelected ? "#abd600" : "rgba(255, 255, 255, 0.1)");">
+                            @dia.Value
+                        </span>
+                    }
+                }
+            </div>
+        </div>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+                <div style="font-size:12px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Nombre Profesor</div>
+                <div style="color:#e5e2e1; font-size:20px;">@Model?.Profesor?.nombre</div>
+            </div>
+
     
-    <form asp-action="Delete">
+    <form asp-action="Delete" style="display:flex; gap:12px; margin-top:var(--spacing-lg); justify-content:center;">
         <input type="hidden" asp-for="id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Eliminar" class="btn btn-danger" /> |
+        <a asp-action="Index" class="btn btn-secondary">Volver</a>
     </form>
+    </div>
 </div>
+
+

@@ -1,0 +1,42 @@
+@model Gimnasio.Models.Plan
+
+@{
+    ViewData["Title"] = "Detalles del Plan";
+}
+
+<main style="width: 100%; max-width: 800px; margin: 0 auto; padding: 32px; margin-top: 70px;">
+    <header style="margin-bottom: 40px;">
+        <h1 style="color: #e5e2e1; margin: 0 0 8px 0;">@Model.nombre</h1>
+        <p style="color: #abd600; margin: 0; font-size: 14px;">Detalles del plan de suscripción</p>
+    </header>
+
+    <section style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 32px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div>
+                <p style="color: #abd600; font-size: 12px; text-transform: uppercase; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.05em;">Nombre del Plan</p>
+                <p style="color: #e5e2e1; font-size: 18px; font-weight: 700; margin: 0;">@Html.DisplayFor(model => model.nombre)</p>
+            </div>
+            <div>
+                <p style="color: #abd600; font-size: 12px; text-transform: uppercase; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.05em;">Precio</p>
+                <p style="color: #CCFF00; font-size: 18px; font-weight: 700; margin: 0;">$@Html.DisplayFor(model => model.precio)</p>
+            </div>
+        </div>
+        <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 24px 0;" />
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div>
+                <p style="color: #abd600; font-size: 12px; text-transform: uppercase; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.05em;">Límite de Clases</p>
+                <p style="color: #e5e2e1; font-size: 18px; font-weight: 700; margin: 0;">@(Model.limite_clases.HasValue ? Model.limite_clases.ToString() : "Ilimitado")</p>
+            </div>
+            <div>
+                <p style="color: #abd600; font-size: 12px; text-transform: uppercase; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.05em;">ID del Plan</p>
+                <p style="color: #e5e2e1; font-size: 18px; font-weight: 700; margin: 0;">@Html.DisplayFor(model => model.id)</p>
+            </div>
+        </div>
+    </section>
+
+    <div style="display: flex; gap: 12px;">
+        <a asp-action="Edit" asp-route-id="@Model?.id" style="flex: 1; text-align: center; padding: 12px 24px; background: #abd600; color: #131313; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='#CCFF00'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='#abd600'; this.style.transform='scale(1)'">Editar</a>
+        <a asp-action="Delete" asp-route-id="@Model?.id" style="flex: 1; text-align: center; padding: 12px 24px; background: rgba(255, 180, 171, 0.2); color: #ffb4ab; border: 1px solid rgba(255, 180, 171, 0.5); border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255, 180, 171, 0.3)'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='rgba(255, 180, 171, 0.2)'; this.style.transform='scale(1)'">Eliminar</a>
+        <a href="/Planes" style="flex: 1; text-align: center; padding: 12px 24px; background: rgba(255, 255, 255, 0.1); color: #e5e2e1; border: 1px solid rgba(171, 214, 0, 0.3); border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(171, 214, 0, 0.2)'; this.style.borderColor='#abd600'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(171, 214, 0, 0.3)'">Volver</a>
+    </div>
+</main>

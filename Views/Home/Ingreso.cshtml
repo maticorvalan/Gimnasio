@@ -1,0 +1,138 @@
+@{
+    ViewData["Title"] = "Check-in";
+}
+
+<body class="login-page">
+    <div style="display:flex; align-items:center; justify-content:center; min-height:80vh; padding-bottom:60px;">
+        <div class="login-card" style="width:100%; max-width:480px; text-align:center;">
+
+            <h1 style="color:#1c1c1c; margin-bottom:8px;">Check-in</h1>
+            <p style="color:rgb(41, 37, 75); margin-bottom:var(--spacing-lg);">Ingresá tu DNI para verificar tu membresía</p>
+
+            <div class="login-form" style="text-align:left;">
+                <input 
+                    class="login-input"
+                    type="number" 
+                    id="dniInput" 
+                    placeholder="Ingresá tu DNI" 
+                    autofocus
+                    onkeydown="if(event.key === 'Enter') consultarDni()"
+                />
+            </div>
+
+            <button onclick="consultarDni()" class="btn btn-primary login-submit" style="color:rgb(217, 232, 247); width:100%; margin-top:8px;">
+                Ingresar
+            </button>
+
+            <div id="resultado" style="margin-top:var(--spacing-lg); display:none;"></div>
+
+        </div>
+    </div>
+</body>
+
+@section Scripts {
+<script>
+    async function consultarDni() {
+        const dni = document.getElementById('dniInput').value.trim();
+
+        if (!dni) {
+            mostrarError('Ingresá tu DNI.');
+            return;
+        }
+        if (dni.length < 7 || dni.length > 8) {
+            mostrarError('El DNI debe contener 7 u 8 dígitos.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/Home/CheckInAutomatico', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dni: dni })
+            });
+
+            const data = await res.json();
+
+            if (data.exito) {
+                mostrarExito(data.mensaje);
+            } else {
+                mostrarError(data.mensaje);
+            }
+
+        } catch (err) {
+            console.error(err);
+            mostrarError('Ocurrió un error al consultar. Intentá de nuevo.');
+        }
+
+        document.getElementById('dniInput').value = '';
+        document.getElementById('dniInput').focus();
+    }
+
+    function mostrarExito(mensaje) {
+        const div = document.getElementById('resultado');
+        div.innerHTML = `
+            <div style="background:#ffffff; border:2px solid rgb(41, 37, 75); border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(41,37,75,0.1); text-align:left;">
+                <div style="font-size:48px; margin-bottom:8px; text-align:center;">✅</div>
+                <div style="color:#1c1c1c; font-size:16px; white-space:pre-line;">${mensaje}</div>
+            </div>
+        `;
+        div.style.display = 'block';
+    }
+
+    function mostrarError(mensaje) {
+        const div = document.getElementById('resultado');
+        div.innerHTML = `<div class="alert alert-danger" style="color:red; border-left-color:red;">${mensaje}</div>`;
+        div.style.display = 'block';
+    }
+
+    @* function mostrarExito(data) {
+        const div = document.getElementById('resultado');
+        const vencimiento = new Date(data.fechaVencimiento).toLocaleDateString('es-AR');
+
+        div.innerHTML = `
+            <div style="background:#ffffff; border:2px solid rgb(41, 37, 75); border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(41,37,75,0.1);">
+                <div style="font-size:48px; margin-bottom:8px;">✅</div>
+                <div style="font-size:20px; font-weight:700; color:rgb(41, 37, 75); margin-bottom:16px;">
+                    ¡Bienvenido, ${data.nombreUsuario}!
+                </div>
+
+                <div style="text-align:left; display:flex; flex-direction:column; gap:12px;">
+                    <div style="border-bottom:1px solid rgba(41,37,75,0.15); padding-bottom:8px;">
+                        <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:rgb(41, 37, 75); text-transform:uppercase;">Plan</div>
+                        <div style="color:#1c1c1c; font-size:16px;">${data.nombrePlan}</div>
+                    </div>
+
+                    <div style="border-bottom:1px solid rgba(41,37,75,0.15); padding-bottom:8px;">
+                        <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:rgb(41, 37, 75); text-transform:uppercase;">Clases Restantes</div>
+                        <div style="color:#1c1c1c; font-size:16px;">
+                            ${data.esPaseLibre ? 'Pase Libre' : data.clasesRestantes}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:rgb(41, 37, 75); text-transform:uppercase;">Vence</div>
+                        <div style="color:#1c1c1c; font-size:16px;">${vencimiento}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        div.style.display = 'block';
+    }
+
+    function mostrarSinSuscripcion(nombre, mensaje) {
+        const div = document.getElementById('resultado');
+        div.innerHTML = `
+            <div class="alert alert-warning" style="text-align:left; color:red; border-left-color: red;">
+                <strong>${nombre ? `Hola, ${nombre}.` : ''}</strong> ${mensaje}
+            </div>
+        `;
+        div.style.display = 'block';
+    }
+
+    function mostrarError(mensaje) {
+        const div = document.getElementById('resultado');
+        div.innerHTML = `<div class="alert alert-danger" style="color: red;border-left-color: red;"">${mensaje}</div>`;
+        div.style.display = 'block';
+    } *@
+</script>
+}

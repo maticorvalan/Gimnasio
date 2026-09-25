@@ -1,47 +1,114 @@
 @model IEnumerable<Gimnasio.Models.Inscripcion>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Inscripciones";
+    var Pagina = ViewBag.Pagina ?? 1;
+    var TotalPaginas = ViewBag.TotalPaginas ?? 1;
 }
 
-<h1>Index</h1>
+<header style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--spacing-xl); width: 100%; margin-top: 70px;">
+    <h1 style="color: #e5e2e1; margin: 0;">Inscripciones</h1>
+    <a asp-action="Create" class="btn-header">Nueva Inscripción</a>
+</header>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
+<form asp-action="Index" method="get" class="d-flex align-items-center">
+		<label for="fechaInicio" class="mr-1 mb-0" style="margin-right:4px;">Inicio:</label>
+		<input type="date" id="fechaInicio" name="fechaInicio" 
+			value="@ViewBag.FechaInicio" 
+			class="form-control form-control-sm mr-2"
+			style="border: solid 1px black;" />
+
+		<label for="fechaFin" class="mr-1 mb-0" style="margin-left: 10px; margin-right:4px;">Fin:</label>
+		<input type="date" id="fechaFin" name="fechaFin" 
+			value="@ViewBag.FechaFin" 
+			class="form-control form-control-sm mr-2"
+			style="border: solid 1px black;"/>
+
+
+		<button type="submit" class="btn btn-primary btn-sm mr-1" style="margin-left:5px; " title="Filtrar fechas">
+			<i class="">Buscar fechas</i>
+		</button>
+		<a asp-action="Index" class="btn btn-sm text-white"  style="margin-left: 5px;background-color: #5bc0de;" title="Limpiar fechas">
+			<i class="">Limpiar fechas</i>
+		</a>
+	</form>
+
+<div style="overflow-x: auto;">
+<table class="data-table">
     <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.idusuario)
+        <tr style="background: rgba(171, 214, 0, 0.1); border-bottom: 2px solid #abd600;">
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+                Nombre Usuario
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.idclase)
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+                Nombre Clase
             </th>
-            <th>
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
                 @Html.DisplayNameFor(model => model.fecha)
             </th>
-            <th></th>
+            <th style="padding: 16px; text-align: center; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Acciones</th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.idusuario)
+        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); transition: background 0.3s ease;" onmouseover="this.style.background='rgba(171, 214, 0, 0.05)'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @(item.Usuario?.nombre ?? "No se encuentra")
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.idclase)
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @(item.Clase?.nombre ?? "No se encuentra")
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.fecha)
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @item.fecha.ToString("dd/MM/yyyy")
             </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.id">Delete</a>
+            <td style="padding: 16px; text-align: center; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <a asp-action="Edit" asp-route-id="@item.id" class="btn-action btn-action-edit">Editar</a>
+                <a asp-action="Details" asp-route-id="@item.id" class="btn-action btn-action-view">Ver</a>
+                <a asp-action="Delete" asp-route-id="@item.id" class="btn-action btn-action-delete">Eliminar</a>
             </td>
         </tr>
 }
     </tbody>
 </table>
+</div>
+<!-- Paginación -->
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        @if (Pagina > 1)
+        {
+            <li class="page-item">
+                <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina - 1)" asp-route-fechaInicio="@ViewBag.FechaInicio" asp-route-fechaFin="@ViewBag.FechaFin">
+                    <i class="fa fa-arrow-left"></i>
+                </a>
+            </li>
+        }
+        else
+        {
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fa fa-arrow-left"></i></span>
+            </li>
+        }
+
+        @for (int i = 1; i <= TotalPaginas; i++)
+        {
+            <li class="page-item @(i == Pagina ? "active" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-route-fechaInicio="@ViewBag.FechaInicio" asp-route-fechaFin="@ViewBag.FechaFin">@i</a>
+            </li>
+        }
+
+        @if (Pagina < TotalPaginas)
+        {
+            <li class="page-item">
+                <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina + 1)" asp-route-fechaInicio="@ViewBag.FechaInicio" asp-route-fechaFin="@ViewBag.FechaFin">
+                    <i class="fa fa-arrow-right"></i>
+                </a>
+            </li>
+        }
+        else
+        {
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fa fa-arrow-right"></i></span>
+            </li>
+        }
+    </ul>
+</nav>

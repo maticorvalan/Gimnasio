@@ -1,47 +1,56 @@
 @model IEnumerable<Gimnasio.Models.Profesor>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Profesores";
 }
 
-<h1>Index</h1>
+<header style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--spacing-xl); width: 100%; margin-top: 70px;">
+    <h1 style="color: #e5e2e1; margin: 0;">Profesores</h1>
+    <a asp-action="Create" class="btn-header">Nuevo Profesor</a>
+</header>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
+<div style="overflow-x: auto;">
+<table class="data-table">
     <thead>
-        <tr>
-            <th>
+        <tr style="background: rgba(171, 214, 0, 0.1); border-bottom: 2px solid #abd600;">
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
                 @Html.DisplayNameFor(model => model.nombre)
             </th>
-            <th>
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
                 @Html.DisplayNameFor(model => model.especialidad)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.rutaFoto)
+            <th style="padding: 16px; text-align: left; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+                Foto de perfil
             </th>
-            <th></th>
+            <th style="padding: 16px; text-align: center; color: #abd600; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Acciones</th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
-        <tr>
-            <td>
+        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); transition: background 0.3s ease;" onmouseover="this.style.background='rgba(171, 214, 0, 0.05)'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
                 @Html.DisplayFor(modelItem => item.nombre)
             </td>
-            <td>
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
                 @Html.DisplayFor(modelItem => item.especialidad)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.rutaFoto)
+            <td style="padding: 16px; color: #e5e2e1; font-size: 14px;">
+                @if (!string.IsNullOrEmpty(item.rutaFoto))
+                {
+                    <img src="@item.rutaFoto?v=@DateTime.Now.Ticks" style="width:40px; height:40px; border-radius:50%; margin-top:8px; object-fit:cover;" />
+                } // ver que hacer con la cache en las imagenes
+                else
+                {
+                    <img src="/uploads/defecto.webp" style="width:40px; height:40px; border-radius:50%; margin-top:8px; object-fit:cover;" />
+                }
             </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.id">Delete</a>
+            <td style="padding: 16px; text-align: center; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <a asp-action="Edit" asp-route-id="@item.id" class="btn-action btn-action-edit">Editar</a>
+                <a asp-action="Details" asp-route-id="@item.id" class="btn-action btn-action-view">Detalles</a>
+                <a asp-action="Delete" asp-route-id="@item.id" class="btn-action btn-action-delete">Eliminar</a>
             </td>
         </tr>
 }
     </tbody>
 </table>
+</div>

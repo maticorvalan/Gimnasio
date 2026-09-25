@@ -1,0 +1,570 @@
+@{
+    ViewData["Title"] = "Gestión de Suscripciones";
+}
+
+<!-- Modal de Formulario -->
+<div id="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:var(--surface-container); border:1px solid rgba(255,255,255,0.1); border-radius:var(--rounded-lg); padding:var(--spacing-lg); width:100%; max-width:520px; max-height:90vh; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--spacing-md); border-bottom:2px solid rgba(195,244,0,0.2); padding-bottom:var(--spacing-sm);">
+      <h3 id="modal-title" style="margin:0;">Nueva Suscripción</h3>
+      <button onclick="cerrarModal()" style="background:none; border:none; color:var(--on-surface-variant); font-size:20px; cursor:pointer;">✕</button>
+    </div>
+
+    <div id="react-form-root"></div>
+  </div>
+</div>
+
+<!-- Página principal -->
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+  <h1 style="color:#e5e2e1; margin:0;">Gestión de Suscripciones</h1>
+  <button class="btn-header" onclick="abrirModalCrear()">+ Agregar Suscripción</button>
+</header>
+
+<div style="overflow-x:auto;">
+  <div id="react-table-root"></div>
+</div>
+
+@section Scripts {
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@@babel/standalone@@7.23.10/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    const PAGE_SIZE = 5;
+
+    /* ── Shared state (fuera de React para comunicar tabla ↔ modal) ── */
+    let _setSuscripciones = null;
+    let _setFormData = null;
+    let _setIsEditing = null;
+    let _refreshSuscripciones = null;
+
+    const EMPTY_FORM = {
+      id: 0, idusuario: '', idplan: '',
+      fecha_inicio: '', fecha_fin: '',
+      metodo_pago: 'Efectivo',
+      clases_restantes: '', activa: true
+    };
+    const BuscadorUsuario = ({ onSeleccionar }) => {
+        const [query, setQuery] = useState('');
+        const [resultados, setResultados] = useState([]);
+        const [loading, setLoading] = useState(false);
+        const [seleccionado, setSeleccionado] = useState(null);
+
+        const buscar = async (texto) => {
+            setQuery(texto);
+            setSeleccionado(null); // Limpia la selección al escribir de nuevo
+
+            if (texto.length < 2) {
+                setResultados([]);
+                return;
+            }
+
+            setLoading(true);
+            try {
+                const res = await fetch(`/api/Usuarios/buscar?q=${encodeURIComponent(texto)}`);
+                const data = await res.json();
+                setResultados(data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const seleccionar = (usuario) => {
+            setSeleccionado(usuario);
+            setQuery(usuario.nombre);
+            setResultados([]);
+            onSeleccionar(usuario.id); // Le pasa el id al formulario padre
+        };
+
+        const dropdownStyle = {
+            position: 'absolute', top: '100%', left: 0, right: 0,
+            background: 'var(--surface-container-high)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 'var(--rounded-md)',
+            zIndex: 10, maxHeight: '200px', overflowY: 'auto'
+        };
+
+        const itemStyle = {
+            padding: '10px 14px', cursor: 'pointer',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            color: '#e5e2e1', fontSize: '14px'
+        };
+
+        return (
+            <div style={{ position: 'relative' }}>
+                <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => buscar(e.target.value)}
+                    placeholder="Buscar por nombre o DNI..."
+                    style={ seleccionado ? { borderBottomColor: 'var(--primary-fixed-dim)' } : {} }
+                />
+                {loading && (
+                    <div style={{ color: 'var(--on-surface-variant)', fontSize: '12px', marginTop: '4px' }}>
+                        Buscando...
+                    </div>
+                )}
+                {resultados.length > 0 && (
+                    <div style={dropdownStyle}>
+                        {resultados.map(u => (
+                            <div key={u.id}
+                                style={itemStyle}
+                                onClick={() => seleccionar(u)}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(171,214,0,0.08)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                            >
+                                {u.nombre}
+                                <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px', marginLeft: '8px' }}>
+                                    DNI: {u.dni}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    /* ══════════════════════════════════════
+       COMPONENTE: Formulario (dentro del modal)
+    ══════════════════════════════════════ */
+    const SuscripcionForm = ({ usuarios, planes, onSaved }) => {
+      const [formData, setFormData] = useState(EMPTY_FORM);
+      const [isEditing, setIsEditing] = useState(false);
+      const [loading, setLoading] = useState(false);
+
+      // Exponemos setters para que el JS externo pueda precargar datos al editar
+      _setFormData = (data) => { setFormData(data); };
+      _setIsEditing = (val) => setIsEditing(val);
+
+      const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+
+        setFormData(prev => {
+          const updated = { ...prev, [name]: type === 'checkbox' ? checked : value };
+
+          // Al cambiar el plan, auto-completa clases_restantes y precio desde el plan seleccionado
+          if (name === 'idplan') {
+            const planSeleccionado = planes.find(p => p.id === parseInt(value));
+            updated.clases_restantes = planSeleccionado?.limite_clases ?? '';
+            updated.precio = planSeleccionado?.precio ?? '';
+          }
+
+          // Al cambiar fecha_inicio, calcula fecha_fin un mes después
+          if (name === 'fecha_inicio' && value) {
+            const inicio = new Date(value);
+            inicio.setMonth(inicio.getMonth() + 1);
+            // Formato YYYY-MM-DD para el input date
+            updated.fecha_fin = inicio.toISOString().substring(0, 10);
+          }
+
+          return updated;
+        });
+      };
+
+      const handleSubmit = async () => {
+        setLoading(true);
+        const payload = isEditing
+        ? {  // Editar sigue usando el objeto completo
+            ...formData,
+            idusuario: parseInt(formData.idusuario),
+            idplan: parseInt(formData.idplan),
+            clases_restantes: formData.clases_restantes ? parseInt(formData.clases_restantes) : null
+          }
+        : {  // Crear usa el DTO
+            idusuario:   parseInt(formData.idusuario),
+            idplan:      parseInt(formData.idplan),
+            metodo_pago: formData.metodo_pago
+          };
+
+        const url = isEditing ? `/api/SuscripcionesApi/${formData.id}` : '/api/SuscripcionesApi';
+        const method = isEditing ? 'PUT' : 'POST';
+
+        try {
+          const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            setFormData(EMPTY_FORM);
+            setIsEditing(false);
+            onSaved();
+            cerrarModal();
+          } else {
+            alert("Error al procesar la solicitud.");
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const labelStyle = {
+        fontSize: '11px', fontWeight: 700,
+        letterSpacing: '0.05em', color: 'var(--on-background)',
+        display: 'block', marginBottom: '4px', textTransform: 'uppercase'
+      };
+      const groupStyle = { marginBottom: '20px' };
+
+      return (
+        <div>
+          <div style={groupStyle}>
+            <label style={labelStyle}>Usuario</label>
+            <BuscadorUsuario
+                onSeleccionar={(id) => setFormData(prev => ({ ...prev, idusuario: id }))}
+            />
+          </div>
+
+          <div style={groupStyle}>
+            <label style={labelStyle}>Plan</label>
+            <select name="idplan" value={formData.idplan} onChange={handleChange} required>
+              <option value="">-- Seleccione un Plan --</option>
+              {planes.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+            </select>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+            <div>
+              <label style={labelStyle}>Fecha Inicio</label>
+              <input type="date" name="fecha_inicio" value={formData.fecha_inicio} onChange={handleChange} required />
+            </div>
+            <div>
+              <label style={labelStyle}>Fecha Fin <span style={{color:'var(--on-surface-variant)', fontWeight:400}}>(+1 mes)</span></label>
+              <input 
+                type="date" 
+                name="fecha_fin" 
+                value={formData.fecha_fin} 
+                onChange={handleChange}
+                readOnly
+                style={{ opacity: 0.7, cursor: 'not-allowed' }}
+              />
+            </div>
+          </div>
+
+          <div style={groupStyle}>
+            <label style={labelStyle}>
+              Clases Restantes 
+              <span style={{ color:'var(--on-surface-variant)', fontWeight:400 }}>
+                (calculado según el plan)
+              </span>
+            </label>
+            <input 
+              type="number" 
+              name="clases_restantes" 
+              value={formData.clases_restantes} 
+              onChange={handleChange}
+              placeholder="Se completa al elegir el plan"
+              readOnly  // <-- solo lectura
+              style={{ opacity: 0.7, cursor: 'not-allowed' }}
+            />
+          </div>
+          <div style={groupStyle}>
+            <label style={labelStyle}>Método de Pago</label>
+            <select name="metodo_pago" value={formData.metodo_pago} onChange={handleChange}>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Tarjeta">Tarjeta</option>
+            </select>
+          </div>
+          <div style={groupStyle}>
+            <label style={labelStyle}>
+              Precio
+              <span style={{ color:'var(--on-surface-variant)', fontWeight:400 }}>
+                (calculado según el plan)
+              </span>
+            </label>
+            <input 
+              type="number" 
+              name="precio" 
+              value={formData.precio} 
+              onChange={handleChange}
+              placeholder="Se completa al elegir el plan"
+              readOnly
+              style={{ opacity: 0.7, cursor: 'not-allowed' }}
+            />
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'24px' }}>
+            <input type="checkbox" name="activa" id="chk-activa" checked={formData.activa} onChange={handleChange}
+              style={{ width:'18px', height:'18px', accentColor:'var(--primary-fixed-dim)', cursor:'pointer' }} />
+            <label htmlFor="chk-activa" style={{ ...labelStyle, margin:0 }}>Suscripción Activa</label>
+          </div>
+
+          <div style={{ display:'flex', gap:'12px', justifyContent:'flex-end' }}>
+            <button className="btn btn-ghost" onClick={cerrarModal} type="button">Cancelar</button>
+            <button className="btn btn-primary" onClick={handleSubmit} disabled={loading} type="button">
+              {loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Guardar')}
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    /* ══════════════════════════════════════
+       COMPONENTE: Tabla
+    ══════════════════════════════════════ */
+    const SuscripcionesTabla = ({ usuarios, planes }) => {
+      const [suscripciones, setSuscripciones] = useState([]);
+      const [paginaActual, setPaginaActual] = useState(1);
+      const [totalRegistros, setTotalRegistros] = useState(0);
+      const [fechaFiltro, setFechaFiltro] = useState('');
+      const [fechaAplicada, setFechaAplicada] = useState('');
+      const [nombreFiltro, setNombreFiltro] = useState('');
+      const [nombreAplicado, setNombreAplicado] = useState('');
+      const [estadoFiltro, setEstadoFiltro] = useState(''); // '', 'vigente', 'caducada'
+      const [loading, setLoading] = useState(false);
+
+      _setSuscripciones = setSuscripciones;
+
+      const totalPaginas = Math.max(1, Math.ceil(totalRegistros / PAGE_SIZE));
+
+      const cargarPagina = async (pagina = paginaActual, fecha = fechaAplicada, nombre = nombreAplicado, estado = estadoFiltro) => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          pagina: String(pagina),
+          pageSize: String(PAGE_SIZE)
+        });
+
+        if (fecha) params.append('fecha', fecha);
+        if (nombre) params.append('nombreUsuario', nombre);
+        if (estado) params.append('estado', estado);
+
+        const res = await fetch(`/api/SuscripcionesApi/paginado?${params.toString()}`);
+        const data = await res.json();
+        setSuscripciones(data.items ?? []);
+        setTotalRegistros(data.total ?? 0);
+        setPaginaActual(data.pagina ?? pagina);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    _refreshSuscripciones = () => cargarPagina(paginaActual, fechaAplicada, nombreAplicado, estadoFiltro);
+
+
+      useEffect(() => { cargarPagina(1, ''); }, []);
+
+      const handleDelete = async (id) => {
+        if (!window.confirm("¿Está seguro de eliminar esta suscripción?")) return;
+        try {
+          const res = await fetch(`/api/SuscripcionesApi/${id}`, { method: 'DELETE' });
+          if (res.ok) cargarPagina(paginaActual, fechaAplicada);
+        } catch (err) { console.error(err); }
+      };
+
+      const handleEdit = (s) => {
+        if (_setFormData) _setFormData({
+          id: s.id,
+          idusuario: s.idusuario,
+          idplan: s.idplan,
+          fecha_inicio: s.fecha_inicio.substring(0, 10),
+          fecha_fin: s.fecha_fin.substring(0, 10),
+          clases_restantes: s.clases_restantes || '',
+          precio: s.precio || '',
+          activa: s.activa
+        });
+        if (_setIsEditing) _setIsEditing(true);
+        document.getElementById('modal-title').textContent = 'Editar Suscripción';
+        document.getElementById('modal-overlay').style.display = 'flex';
+      };
+
+      const aplicarFiltro = () => {
+        setFechaAplicada(fechaFiltro);
+        setNombreAplicado(nombreFiltro);
+        setPaginaActual(1);
+        cargarPagina(1, fechaFiltro, nombreFiltro, estadoFiltro);
+      };
+
+      const limpiarFiltro = () => {
+        setFechaFiltro('');
+        setFechaAplicada('');
+        setNombreFiltro('');
+        setNombreAplicado('');
+        setEstadoFiltro('');
+        setPaginaActual(1);
+        cargarPagina(1, '', '', '');
+      };
+
+      if (suscripciones.length === 0) {
+        return (
+          <>
+            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'end', marginBottom:'20px' }}>
+              <div>
+                <label style={{ display:'block', marginBottom:'6px', color:'#e5e2e1', fontWeight:600 }}>Filtrar por fecha</label>
+                <input type="date" value={fechaFiltro} onChange={(e) => setFechaFiltro(e.target.value)} />
+              </div>
+              <button className="btn-header" type="button" onClick={aplicarFiltro}>Buscar</button>
+              <button className="btn-header" type="button" onClick={limpiarFiltro} style={{ opacity:0.7 }}>Limpiar</button>
+            </div>
+            <div style={{ textAlign:'center', padding:'60px 20px', color:'var(--on-surface-variant)' }}>
+              <div style={{ fontSize:'48px', marginBottom:'16px' }}>📋</div>
+              <p style={{ margin:0 }}>No hay suscripciones registradas.</p>
+            </div>
+          </>
+        );
+      }
+
+      return (
+        <>
+          <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'end', marginBottom:'20px' }}>
+            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'end', marginBottom:'20px' }}>
+              <div>
+                <label style={{ display:'block', marginBottom:'6px', color:'#e5e2e1', fontWeight:600 }}>Buscar usuario</label>
+                <input 
+                  type="text" 
+                  placeholder="Nombre del usuario..." 
+                  value={nombreFiltro} 
+                  onChange={(e) => setNombreFiltro(e.target.value)} 
+                />
+              </div>
+
+              <div>
+                <label style={{ display:'block', marginBottom:'6px', color:'#e5e2e1', fontWeight:600 }}>Estado</label>
+                <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value)}>
+                  <option value="">Todas</option>
+                  <option value="vigente">Vigentes</option>
+                  <option value="caducada">Caducadas</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display:'block', marginBottom:'6px', color:'#e5e2e1', fontWeight:600 }}>Filtrar por fecha</label>
+                <input type="date" value={fechaFiltro} onChange={(e) => setFechaFiltro(e.target.value)} />
+              </div>
+
+              <button className="btn-header" type="button" onClick={aplicarFiltro}>Buscar</button>
+              <button className="btn-header" type="button" onClick={limpiarFiltro} style={{ opacity:0.7 }}>Limpiar</button>
+            </div>
+            <div style={{ marginLeft:'auto', color:'var(--on-surface-variant)', fontSize:'14px' }}>
+              Total: {totalRegistros} | Página {paginaActual} de {totalPaginas}
+            </div>
+          </div>
+
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Plan</th>
+                <th>Vencimiento</th>
+                <th>Clases Restantes</th>
+                <th style={{ textAlign:'center' }}>Estado</th>
+                <th style={{ textAlign:'center' }}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" style={{ textAlign:'center', padding:'30px', color:'var(--on-surface-variant)' }}>Cargando...</td>
+                </tr>
+              ) : suscripciones.map(s => (
+                <tr key={s.id}>
+                  <td>{s.usuario?.nombre || `Usuario #${s.idusuario}`}</td>
+                  <td>
+                    <span style={{ background:'rgba(171,214,0,0.15)', color:'var(--primary-fixed-dim)', padding:'3px 10px', borderRadius:'999px', fontSize:'12px', fontWeight:700 }}>
+                      {s.plan?.nombre || `Plan #${s.idplan}`}
+                    </span>
+                  </td>
+                  <td>{new Date(s.fecha_fin).toLocaleDateString('es-AR')}</td>
+                  <td>
+                    {s.clases_restantes != null
+                      ? <span style={{ fontWeight:700, color:'var(--primary-fixed-dim)' }}>{s.clases_restantes}</span>
+                      : <span style={{ color:'var(--on-surface-variant)', fontStyle:'italic' }}>Pase Libre</span>}
+                  </td>
+                  <td style={{ textAlign:'center' }}>
+                    {s.activa
+                      ? <span style={{ background:'rgba(171,214,0,0.15)', color:'#abd600', padding:'3px 12px', borderRadius:'999px', fontSize:'12px', fontWeight:700 }}>✓ Vigente</span>
+                      : <span style={{ background:'rgba(255,180,171,0.15)', color:'#ffb4ab', padding:'3px 12px', borderRadius:'999px', fontSize:'12px', fontWeight:700 }}>✕ Caducada</span>}
+                  </td>
+                  <td>
+                    <div className="table-actions">
+                      <button className="btn-action btn-action-edit" onClick={() => handleEdit(s)}>Editar</button>
+                      <button className="btn-action btn-action-delete" onClick={() => handleDelete(s.id)}>Eliminar</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:'12px', marginTop:'20px', flexWrap:'wrap' }}>
+            <button className="btn-header" type="button" disabled={paginaActual <= 1} onClick={() => cargarPagina(paginaActual - 1, fechaAplicada)}>
+              Anterior
+            </button>
+            <span style={{ color:'var(--on-surface-variant)' }}>
+              Página {paginaActual} de {totalPaginas}
+            </span>
+            <button className="btn-header" type="button" disabled={paginaActual >= totalPaginas} onClick={() => cargarPagina(paginaActual + 1, fechaAplicada)}>
+              Siguiente
+            </button>
+          </div>
+        </>
+      );
+    };
+
+    /* ══════════════════════════════════════
+       INICIALIZACIÓN: carga datos y monta ambos roots
+    ══════════════════════════════════════ */
+    const cargarSuscripciones = async (setter) => {
+      try {
+        const res = await fetch('/api/SuscripcionesApi/paginado?pagina=1&pageSize=5');
+        const data = await res.json();
+        setter(data.items ?? []);
+      } catch (err) { console.error(err); }
+    };
+
+    const init = async () => {
+      let planes = [];
+      try {
+        const rp = await fetch('/api/Planes');
+        planes = await rp.json();
+      } catch (err) { console.error("Error cargando usuarios/planes:", err); }
+
+      // Monta la tabla
+      ReactDOM.createRoot(document.getElementById('react-table-root'))
+        .render(<SuscripcionesTabla/>);
+
+      // Monta el formulario (dentro del modal, que ya existe en el DOM)
+      ReactDOM.createRoot(document.getElementById('react-form-root'))
+        .render(<SuscripcionForm
+            planes={planes}
+          onSaved={() => window._refreshSuscripciones && window._refreshSuscripciones()}
+        />);
+    };
+
+    init();
+  </script>
+
+  <script>
+    function abrirModalCrear() {
+      // Resetea el formulario a vacío
+      if (window._setFormData) window._setFormData({
+        id: 0, idusuario: '', idplan: '',
+        fecha_inicio: '', fecha_fin: '',
+        clases_restantes: '', activa: true
+      });
+      if (window._setIsEditing) window._setIsEditing(false);
+      document.getElementById('modal-title').textContent = 'Nueva Suscripción';
+      document.getElementById('modal-overlay').style.display = 'flex';
+    }
+
+    window._refreshSuscripciones = () => {
+      if (_refreshSuscripciones) _refreshSuscripciones();
+    };
+
+    function cerrarModal() {
+      document.getElementById('modal-overlay').style.display = 'none';
+    }
+
+    // Cerrar al hacer clic fuera del modal
+    document.getElementById('modal-overlay').addEventListener('click', function(e) {
+      if (e.target === this) cerrarModal();
+    });
+  </script>
+}

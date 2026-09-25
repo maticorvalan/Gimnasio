@@ -1,36 +1,38 @@
 @model Gimnasio.Models.Inscripcion
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalle de Inscripción";
 }
 
-<h1>Details</h1>
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+    <h1 style="color:#e5e2e1; margin:0;">Detalle de Inscripción</h1>
+    <a asp-action="Index" class="btn-action btn-action-view">← Volver</a>
+</header>
 
-<div>
-    <h4>Inscripcion</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.idusuario)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.idusuario)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.idclase)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.idclase)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.fecha)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.fecha)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="card" style="max-width:520px;">
+
+    <div style="display:flex; flex-direction:column; gap:var(--spacing-md);">
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Usuario</div>
+            <div style="color:#e5e2e1; font-size:16px;">@(Model.Usuario?.nombre ?? $"ID {Model.idusuario}")</div>
+        </div>
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:var(--spacing-md);">
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Clase</div>
+            <div style="color:#e5e2e1; font-size:16px;">@(Model.Clase?.nombre ?? $"ID {Model.idclase}")</div>
+        </div>
+
+        <div>
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.05em; color:var(--primary-fixed-dim); text-transform:uppercase; margin-bottom:4px;">Fecha</div>
+            <div style="color:#e5e2e1; font-size:16px;">@Model.fecha.ToString("dd/MM/yyyy")</div>
+        </div>
+
+    </div>
+
+    <div style="display:flex; gap:12px; margin-top:var(--spacing-lg);">
+        <a asp-action="Edit" asp-route-id="@Model.id" class="btn-action btn-action-edit">Editar</a>
+        <a asp-action="Delete" asp-route-id="@Model.id" class="btn-action btn-action-delete">Eliminar</a>
+    </div>
+
 </div>

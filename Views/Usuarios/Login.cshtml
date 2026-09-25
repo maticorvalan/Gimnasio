@@ -1,0 +1,50 @@
+@model Gimnasio.Models.ViewModels.LoginView
+
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login — Mystik Training</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/design-system.css" />
+</head>
+<body class="login-page">
+    <div class="login-card">
+
+        <div class="logo-wrap">
+            <img class="login-logo" src="/uploads/Logo_grande.jpeg" alt="Logo de FitCore" />
+        </div>
+
+        <div class="login-title">
+            <h2>Mystik Training</h2>
+            <p>Iniciá sesión para continuar</p>
+        </div>
+
+        <form class="login-form" asp-action="Login" method="post">
+            <div asp-validation-summary="ModelOnly" class="login-validation-summary"></div>
+
+            <div class="form-group">
+                <label for="Dni">DNI</label>
+                <input class="login-input" asp-for="Dni" id="Dni" type="text" placeholder="Ingresá tu DNI" />
+                <span asp-validation-for="Dni" class="login-field-validation-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="Password">Contraseña</label>
+                <input class="login-input" asp-for="Password" id="Password" type="password" placeholder="Ingresá tu contraseña" />
+                <span asp-validation-for="Password" class="login-field-validation-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary login-submit" style="color: white;">
+                Iniciar Sesión
+            </button>
+        </form>
+    </div>
+</body>
+</html>

@@ -8,20 +8,26 @@ namespace Gimnasio.Models
     [Table("clases")]
     public class Clase
     {
+        [Display(Name = "ID")]
         public int id { get; set; }
-        [Required]
+        [Required(ErrorMessage = "El nombre es obligatorio")]
         public string nombre { get; set; } = string.Empty;
-        [Required]
+        [Required(ErrorMessage = "La descripción es obligatoria")]
         public string descripcion { get; set; } = string.Empty;
-        [Required]
         public DateTime horario { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Seleccione los días de la semana")]
+        public string dias_semana { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Seleccione un horario de inicio")]
+        public TimeSpan hora_inicio { get; set; }
+        [Required(ErrorMessage = "Seleccione un horario de fin")]
+        public TimeSpan hora_fin { get; set; }
+        [Required(ErrorMessage = "El profesor es obligatorio")]
         public int idprofesor { get; set; }
-        [Required]
-        public int capacidad { get; set; }
-
+        [Required(ErrorMessage = "La capacidad es obligatoria")]
+        public int capacidad { get; set; } 
         // Navegación
         public ICollection<Inscripcion> Inscripciones { get; set; } = new List<Inscripcion>();
-        public Profesor Profesor { get; set; } = null!;
+        [ForeignKey(nameof(idprofesor))]
+        public Profesor? Profesor { get; set; }
     }
 }

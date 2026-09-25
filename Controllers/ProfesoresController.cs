@@ -1,28 +1,29 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Gimnasio.Data;
+
+using Gimnasio.Services;
 using Gimnasio.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Gimnasio.Controllers
 {
+    [Authorize(Roles = "Administrador")]
     public class ProfesoresController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IProfesorService _profesorService;
+        private readonly ImagenService _imagenService;
 
-        public ProfesoresController(ApplicationDbContext context)
+        public ProfesoresController(IProfesorService profesorService, ImagenService imagenService)
         {
-            _context = context;
+            _profesorService = profesorService;
+            _imagenService = imagenService;
         }
 
         // GET: Profesores
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Profesores.ToListAsync());
+            return View(await _profesorService.ObtenerTodos());
         }
 
         // GET: Profesores/Details/5
@@ -33,8 +34,7 @@ namespace Gimnasio.Controllers
                 return NotFound();
             }
 
-            var profesor = await _context.Profesores
-                .FirstOrDefaultAsync(m => m.id == id);
+            var profesor = await _profesorService.ObtenerPorId(id.Value);
             if (profesor == null)
             {
                 return NotFound();
@@ -49,17 +49,28 @@ namespace Gimnasio.Controllers
             return View();
         }
 
-        // POST: Profesores/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,nombre,especialidad,rutaFoto")] Profesor profesor)
+        public async Task<IActionResult> Create([Bind("id,nombre,especialidad,rutaFoto")] Profesor profesor, IFormFile? avatar)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(profesor);
-                await _context.SaveChangesAsync();
+                var creado = await _profesorService.Crear(profesor);
+                if (!creado.Exito)
+                {
+                    ModelState.AddModelError(string.Empty, creado.Mensaje);
+                    return View(profesor);
+                }
+                if(avatar != null)
+                {
+                    var ruta = await _imagenService.GuardarImagen(avatar, "profesores", profesor.id);
+                    if(!string.IsNullOrEmpty(ruta))
+                    {
+                        profesor.rutaFoto = ruta;
+                        await _profesorService.Actualizar(profesor);
+                    }
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(profesor);
@@ -73,7 +84,7 @@ namespace Gimnasio.Controllers
                 return NotFound();
             }
 
-            var profesor = await _context.Profesores.FindAsync(id);
+            var profesor = await _profesorService.ObtenerPorId(id.Value);
             if (profesor == null)
             {
                 return NotFound();
@@ -86,23 +97,48 @@ namespace Gimnasio.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id,nombre,especialidad,rutaFoto")] Profesor profesor)
+        public async Task<IActionResult> Edit(int id, [Bind("id,nombre,especialidad,rutaFoto")] Profesor profesor, IFormFile? avatar)
         {
             if (id != profesor.id)
             {
                 return NotFound();
             }
-
+            if(!ModelState.IsValid)
+            {
+                return View(profesor);
+            }
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(profesor);
-                    await _context.SaveChangesAsync();
+
+                    var profesorActual = await _profesorService.ObtenerPorId(profesor.id);
+                    if (avatar != null && avatar.Length > 0)
+{
+                        // Le pasamos profesorActual.rutaFoto para que el servicio la elimine
+                        var ruta = await _imagenService.GuardarImagen(avatar, "profesores", profesor.id, profesorActual.rutaFoto ?? string.Empty);
+                        
+                        if(!string.IsNullOrEmpty(ruta))
+                        {
+                            profesor.rutaFoto = ruta;
+                        }
+                    }
+                    else
+                    {
+                        profesor.rutaFoto = profesorActual.rutaFoto;
+                    }
+
+                    var actualizado = await _profesorService.Actualizar(profesor);
+                    if (!actualizado.Exito)
+                    {
+                        TempData["Error"] = actualizado.Mensaje;
+                        ModelState.AddModelError(string.Empty, actualizado.Mensaje);
+                        return View(profesor);
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProfesorExists(profesor.id))
+                    if (!await ProfesorExiste(profesor.id))
                     {
                         return NotFound();
                     }
@@ -124,8 +160,7 @@ namespace Gimnasio.Controllers
                 return NotFound();
             }
 
-            var profesor = await _context.Profesores
-                .FirstOrDefaultAsync(m => m.id == id);
+            var profesor = await _profesorService.ObtenerPorId(id.Value);
             if (profesor == null)
             {
                 return NotFound();
@@ -139,19 +174,22 @@ namespace Gimnasio.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var profesor = await _context.Profesores.FindAsync(id);
+            var profesor = await _profesorService.ObtenerPorId(id);
             if (profesor != null)
             {
-                _context.Profesores.Remove(profesor);
+                var eliminado = await _profesorService.Eliminar(id);
+                if (!eliminado.Exito)
+                {
+                    TempData["Error"] = eliminado.Mensaje;
+                }
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProfesorExists(int id)
+        private async Task<bool> ProfesorExiste(int id)
         {
-            return _context.Profesores.Any(e => e.id == id);
+            return await _profesorService.ObtenerPorId(id) != null;
         }
     }
 }

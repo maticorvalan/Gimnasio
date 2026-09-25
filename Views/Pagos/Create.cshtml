@@ -1,0 +1,117 @@
+@model Gimnasio.Models.Pago
+
+@{
+    ViewData["Title"] = "Registrar Pago";
+}
+
+<header style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--spacing-xl); width:100%; margin-top:70px;">
+    <h1 style="color:#e5e2e1; margin:0;">Registrar Pago</h1>
+    <a asp-action="Index" class="btn-action btn-action-view">← Volver</a>
+</header>
+
+<div class="card" style="max-width:520px;">
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" style="color:var(--error); margin-bottom:var(--spacing-md); font-size:14px;"></div>
+
+        <div class="form-group">
+            <label>Usuario</label>
+            <select id="idusuario" name="idusuario" asp-for="idusuario"
+            style="width:100%; background-color:var(--surface-container-low); color:#e5e2e1;">
+            </select>
+            <span asp-validation-for="idusuario" style="color:var(--error); font-size:12px;"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Suscripción</label>
+            <select id="idsuscripcion" asp-for="idsuscripcion"
+            style="width:100%; background-color:var(--surface-container-low); color:#e5e2e1;">
+                <option value="">-- Sin suscripción asociada --</option>
+            </select>
+            <span asp-validation-for="idsuscripcion" style="color:var(--error); font-size:12px;"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Monto</label>
+            <input id="monto" asp-for="monto" type="number" step="0.01" placeholder="Ej: 5000.00" />
+            <span asp-validation-for="monto" style="color:var(--error); font-size:12px;"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Fecha de Pago</label>
+            <input asp-for="fecha_pago" type="date" />
+            <span asp-validation-for="fecha_pago" style="color:var(--error); font-size:12px;"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Método de Pago</label>
+            <select asp-for="metodo_pago">
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Tarjeta">Tarjeta</option>
+            </select>
+            <span asp-validation-for="metodo_pago" style="color:var(--error); font-size:12px;"></span>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:var(--spacing-md);">
+            <input type="submit" value="Guardar" class="btn btn-primary" />
+            <a asp-action="Index" class="btn btn-ghost">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+
+            // 1. Inicializás el buscador de usuario
+            selectUsuario('idusuario');
+
+            // 2. Cuando cambia el usuario, cargás sus suscripciones
+            $('#idusuario').on('change', async function () {
+                const idUsuario = $(this).val();
+                const selectSuscripcion = $('#idsuscripcion');
+
+                // Resetea el select de suscripciones
+                selectSuscripcion.empty().append('<option value="">-- Cargando... --</option>');
+                $('#monto').val('');
+
+                if (!idUsuario) {
+                    selectSuscripcion.empty().append('<option value="">-- Primero seleccione un usuario --</option>');
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`/api/suscripciones-por-usuario/${idUsuario}`);
+                    const suscripciones = await res.json();
+
+                    selectSuscripcion.empty().append('<option value="">-- Seleccione una suscripción --</option>');
+
+                    if (suscripciones.length === 0) {
+                        selectSuscripcion.empty().append('<option value="">Sin suscripciones activas</option>');
+                        return;
+                    }
+
+                    suscripciones.forEach(s => {
+                        const option = new Option(s.texto, s.id);
+                        $(option).data('monto', s.monto); // ← guardás el monto en el elemento
+                        selectSuscripcion.append(option);
+                    });
+
+                } catch (err) {
+                    console.error(err);
+                    selectSuscripcion.empty().append('<option value="">Error al cargar suscripciones</option>');
+                }
+            });
+
+            // 3. Cuando cambia la suscripción, autocompleta el monto
+            $('#idsuscripcion').on('change', function() {
+                const opcion = $(this).find(':selected');
+                const monto  = opcion.data('monto');
+                if (monto) {
+                    $('#monto').val(monto);
+                }
+            });
+        });
+    </script>
+}
