@@ -110,6 +110,7 @@ namespace Gimnasio.Services
                 existente.rol         = usuario.rol;
                 existente.password    = usuario.password;
                 existente.estado      = usuario.estado;
+                existente.telefono    = usuario.telefono;
                 existente.fecha_alta  = usuario.fecha_alta;
                 existente.observaciones = usuario.observaciones;
                 if (!string.IsNullOrEmpty(usuario.ruta_avatar))
@@ -190,6 +191,20 @@ namespace Gimnasio.Services
                 .ToListAsync();
 
             return (items, total);
+        }
+        public async Task<ResultadoOperacion> CrearAlumnoSinPlan(Usuario usuario)
+        {
+            usuario.rol = 2;
+            usuario.estado = true;
+            usuario.password = HashPassword(usuario.password);
+            if (usuario.fecha_alta == default)
+                usuario.fecha_alta = DateTime.Now;
+
+            _context.Usuarios.Add(usuario);
+            var guardado = await _context.SaveChangesAsync() > 0;
+            return guardado
+                ? ResultadoOperacion.Ok()
+                : ResultadoOperacion.Fallo("Error al crear el usuario.");
         }
     }
 }

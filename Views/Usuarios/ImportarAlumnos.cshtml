@@ -1,0 +1,39 @@
+@{
+    ViewData["Title"] = "Importar alumnos";
+    var errores = ViewBag.Errores as List<string>;
+}
+
+<header style="margin-top:70px; margin-bottom:var(--spacing-lg);">
+    <h1 style="color:#e5e2e1; margin:0;">Importar alumnos</h1>
+</header>
+
+<div class="card" style="max-width:640px;">
+    <div asp-validation-summary="ModelOnly" style="color:var(--error); margin-bottom:12px;"></div>
+
+    @if (ViewBag.Creados != null)
+    {
+        <div class="alert alert-success">Se crearon @ViewBag.Creados alumno(s).</div>
+    }
+    @if (errores != null && errores.Any())
+    {
+        <div class="alert alert-danger">
+            <strong>@errores.Count fila(s) con problemas:</strong>
+            <ul style="margin:8px 0 0 18px;">
+                @foreach (var e in errores)
+                {
+                    <li>@e</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <p class="text-muted">Columnas en este orden: <strong>nombre, dni, fecha_alta, telefono</strong> (con fila de encabezado; fecha y teléfono son opcionales).</p>
+
+    <form asp-action="ImportarAlumnos" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <input type="file" name="archivo" accept=".csv" required />
+        </div>
+        <input type="submit" value="Importar" class="btn btn-primary" />
+        <a asp-action="Index" class="btn btn-ghost">Volver</a>
+    </form>
+</div>

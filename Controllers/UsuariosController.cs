@@ -14,6 +14,8 @@ using Gimnasio.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
+using System.Text;
+using System.Globalization;
 
 namespace Gimnasio.Controllers
 {
@@ -134,7 +136,7 @@ namespace Gimnasio.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> CreateAlumn([Bind("id,observaciones,nombre,dni")] Usuario usuario, int idPlan)
+        public async Task<IActionResult> CreateAlumn([Bind("id,observaciones,telefono,nombre,dni")] Usuario usuario, int idPlan)
         {
             ViewBag.Planes = await _planService.ObtenerTodos();
             var plan = await _planService.ObtenerPorId(idPlan);
@@ -209,7 +211,7 @@ namespace Gimnasio.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Edit(int id, [Bind("id,nombre,observaciones,dni,rol,password,estado,fecha_alta,ruta_avatar")] Usuario usuario, IFormFile? avatar, string? nuevaPassword)
+        public async Task<IActionResult> Edit(int id, [Bind("id,nombre,observaciones,telefono,dni,rol,password,estado,fecha_alta,ruta_avatar")] Usuario usuario, IFormFile? avatar, string? nuevaPassword)
         {
             if (id != usuario.id)
             {
@@ -583,6 +585,100 @@ namespace Gimnasio.Controllers
                 
             }
             return View(usuario);
+        }
+        [Authorize(Roles = "Administrador")]
+        public IActionResult ImportarAlumnos()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> ImportarAlumnos(IFormFile? archivo)
+        {
+            if (archivo == null || archivo.Length == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Seleccioná un archivo CSV.");
+                return View();
+            }
+
+            var formatosFecha = new[] { "dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd" };
+            var errores = new List<string>();
+            int creados = 0;
+
+            using var reader = new StreamReader(archivo.OpenReadStream(), Encoding.UTF8);
+            var encabezado = await reader.ReadLineAsync();
+            if (encabezado == null)
+            {
+                ModelState.AddModelError(string.Empty, "El archivo está vacío.");
+                return View();
+            }
+
+            char separador = encabezado.Contains(';') ? ';' : ',';
+            int fila = 1;
+            string? linea;
+
+            while ((linea = await reader.ReadLineAsync()) != null)
+            {
+                fila++;
+                if (string.IsNullOrWhiteSpace(linea)) continue;
+
+                var col = linea.Split(separador).Select(c => c.Trim().Trim('"')).ToArray();
+                if (col.Length < 2)
+                {
+                    errores.Add($"Fila {fila}: faltan columnas (mínimo nombre y dni).");
+                    continue;
+                }
+
+                var nombre = col[0];
+                var dni = new string(col[1].Where(char.IsDigit).ToArray());
+                var textoFecha = col.Length > 2 ? col[2] : "";
+                var telefono = col.Length > 3 ? col[3] : "";
+
+                if (string.IsNullOrWhiteSpace(nombre))
+                {
+                    errores.Add($"Fila {fila}: nombre vacío.");
+                    continue;
+                }
+                if (dni.Length < 7 || dni.Length > 8)
+                {
+                    errores.Add($"Fila {fila} ({nombre}): el DNI debe tener 7 u 8 dígitos.");
+                    continue;
+                }
+
+                DateTime fechaAlta = DateTime.Now;
+                if (!string.IsNullOrWhiteSpace(textoFecha) &&
+                    !DateTime.TryParseExact(textoFecha, formatosFecha, CultureInfo.InvariantCulture,
+                                            DateTimeStyles.None, out fechaAlta))
+                {
+                    errores.Add($"Fila {fila} ({nombre}): fecha '{textoFecha}' inválida (usá dd/MM/yyyy).");
+                    continue;
+                }
+
+                if (await _usuarioService.ObtenerPorDni(dni) != null)
+                {
+                    errores.Add($"Fila {fila} ({nombre}): el DNI {dni} ya está registrado.");
+                    continue;
+                }
+
+                var usuario = new Usuario
+                {
+                    nombre = nombre,
+                    dni = dni,
+                    fecha_alta = fechaAlta,
+                    telefono = string.IsNullOrWhiteSpace(telefono) ? null : telefono,
+                    observaciones = string.Empty,
+                    password = dni.Substring(dni.Length - 4) // mismo criterio que CreateAlumn
+                };
+
+                var resultado = await _usuarioService.CrearAlumnoSinPlan(usuario);
+                if (resultado.Exito) creados++;
+                else errores.Add($"Fila {fila} ({nombre}): {resultado.Mensaje}");
+            }
+
+            ViewBag.Creados = creados;
+            ViewBag.Errores = errores;
+            return View();
         }
     }
 }

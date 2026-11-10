@@ -31,6 +31,11 @@
             </div>
 
             <div class="form-group">
+                    <label placeholder="Ingresa el numero de telefono" class="control-label">Telefono</label>
+                    <input asp-for="telefono" class="form-control" />
+                    <span asp-validation-for="telefono" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label>Seleccionar Plan</label>
                 <select id="planSelect" name="idPlan" required>
                     <option value="">-- Selecciona un plan --</option>

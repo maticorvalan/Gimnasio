@@ -18,5 +18,6 @@ namespace Gimnasio.Services
         Task<int> CantidadAlumnos();
         Task<(List<Usuario> Items, int Total)> ObtenerPaginado(
             int pagina, int pageSize, string? query = null);
+        Task<ResultadoOperacion> CrearAlumnoSinPlan(Usuario usuario);
     }
 }

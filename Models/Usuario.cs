@@ -25,6 +25,7 @@ namespace Gimnasio.Models
         public int rol { get; set; }
         [Required]
         public string password { get; set; } = string.Empty;
+        public string? telefono { get; set;}
         public bool estado { get; set; }
         public DateTime fecha_alta { get; set; }
         public string? ruta_avatar { get; set; } = string.Empty;
